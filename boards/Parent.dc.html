@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>אזור הורים</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFC83D}a:hover{color:#FFE08A}
+.space{background-color:#0E0A2E;background-size:cover;background-position:center}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes fall{from{transform:translateY(-160px)}to{transform:translateY(720px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes popIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes launch{0%{transform:translateY(0)}100%{transform:translateY(-700px)}}
+.shake{animation:shake .45s ease}
+.bob{animation:bob 3s ease-in-out infinite}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+.popin{animation:popIn .35s cubic-bezier(.2,.9,.3,1.3) both}
+.fall{animation-name:fall;animation-timing-function:linear;animation-iteration-count:infinite}
+.launch{animation:launch 1s ease-in forwards}
+/* victory */
+@keyframes shipIn{from{transform:translateX(560px)}to{transform:translateX(0)}}
+@keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes beam{from{transform:scaleX(0);opacity:1}to{transform:scaleX(1);opacity:1}}
+@keyframes beamOff{to{opacity:0}}
+@keyframes burst{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1.25)}100%{opacity:0;transform:scale(1.9)}}
+@keyframes hide{to{opacity:0}}
+@keyframes flyAway{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(-460px,-430px) rotate(-760deg) scale(.2)}}
+@keyframes freeIt{0%{opacity:0;transform:translate(0,0) scale(.3)}60%{opacity:1}100%{opacity:1;transform:translate(330px,-150px) scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.v-ship{animation:shipIn .8s cubic-bezier(.2,.9,.3,1.15) both}
+.v-shipbob{animation:hover 2s ease-in-out .8s infinite}
+.v-beam{transform:scaleX(0);transform-origin:right center;animation:beam .45s ease-out .85s forwards,beamOff .3s 1.45s forwards}
+.v-burst{opacity:0;animation:burst .7s ease-out 1.2s both}
+.v-alien{animation:hide .01s 1.25s forwards}
+.v-dizzy{opacity:0;animation:flyAway 1.4s ease-in 1.25s forwards}
+.v-free{opacity:0;animation:freeIt 1s cubic-bezier(.2,.9,.3,1.25) 1.45s forwards}
+.v-text{opacity:0;animation:fadeUp .5s 2.3s forwards}
+.v-tw{animation:twinkle 1.2s ease-in-out infinite}
+</style>
+</helmet>
+<div class="space" dir="rtl" style="width: 1180px; height: 820px; box-sizing: border-box; padding: 24px 36px; display: flex; flex-direction: column; gap: 14px; font-family: Rubik, Fredoka, sans-serif; color: #FFFFFF; position: relative; overflow: hidden; background-image: linear-gradient(rgba(14,10,46,0.75), rgba(14,10,46,0.9)), url('assets/bg.jpg'); background-size: cover">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <a href="Main.dc.html" aria-label="חזרה למסך הבית" style="width: 54px; height: 54px; border-radius: 50%; background: #241C5C; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #FFFFFF; font-size: 26px">✕</a>
+    <div style="display: flex; flex-direction: column; align-items: center"><span style="font-size: 14px; color: #C9C3F2">אזור הורים</span><span style="font-size: 30px; font-weight: 700">ההתקדמות של הילד</span></div>
+    <span style="width: 54px"></span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px">
+    <sc-for list="{{report}}" as="r" hint-placeholder-count="3">
+      <div style="background: rgba(36,28,92,0.85); border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; border-right: 5px solid {{r.c}}">
+        <span style="font-size: 13px; color: #C9C3F2">{{r.k}}</span>
+        <span style="font-size: 20px; font-weight: 700; line-height: 1.25">{{r.v}}</span>
+      </div>
+    </sc-for>
+  </div>
+  <span style="font-size: 15px; color: #C9C3F2; text-align: center">{{note}}</span>
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <sc-for list="{{subjects}}" as="s" hint-placeholder-count="3">
+      <div style="display: flex; align-items: center; gap: 12px; background: rgba(36,28,92,0.85); border-radius: 18px; padding: 10px 14px">
+        <span style="width: 90px; flex-shrink: 0; font-size: 22px; font-weight: 700; color: {{s.color}}">{{s.name}}</span>
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; flex-grow: 1">
+          <sc-for list="{{s.levels}}" as="lv" hint-placeholder-count="7">
+            <div style="{{lv.style}}">
+              <span style="font-size: 13px; color: #C9C3F2">רמה {{lv.n}}</span>
+              <span style="font-size: 12px; line-height: 1.2; text-align: center; min-height: 30px">{{lv.name}}</span>
+              <span style="font-size: 18px; font-weight: 700">{{lv.label}}</span>
+              <span style="font-size: 12px; color: #FFC83D; letter-spacing: 1px">{{lv.stars}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display: flex; gap: 14px; justify-content: center; margin-top: auto; padding-bottom: 8px">
+    <a href="Intake.dc.html" style="border: 2px solid #C9C3F2; color: #FFFFFF; text-decoration: none; border-radius: 999px; padding: 12px 22px; font: 600 18px Rubik, sans-serif">📝 שאלון רמה מחדש</a>
+    <button onClick="{{toggleMute}}" style="{{muteStyle}}">{{muteLabel}}</button>
+    <button onClick="{{toggleOpen}}" style="{{openStyle}}">{{openLabel}}</button>
+    <button onClick="{{reset}}" style="border: 2px solid rgba(255,122,89,0.5); background: transparent; color: #FFB4A3; border-radius: 999px; padding: 12px 22px; font: 600 16px Rubik, sans-serif; cursor: pointer; opacity: 0.8">{{resetLabel}}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":820}}'></script>
+</body>
+</html>

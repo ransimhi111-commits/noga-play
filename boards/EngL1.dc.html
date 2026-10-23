@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>אַנְגְּלִית · רמה 1</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFC83D}a:hover{color:#FFE08A}
+.space{background-color:#0E0A2E;background-size:cover;background-position:center}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes fall{from{transform:translateY(-160px)}to{transform:translateY(720px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes popIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes launch{0%{transform:translateY(0)}100%{transform:translateY(-700px)}}
+.shake{animation:shake .45s ease}
+.bob{animation:bob 3s ease-in-out infinite}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+.popin{animation:popIn .35s cubic-bezier(.2,.9,.3,1.3) both}
+.fall{animation-name:fall;animation-timing-function:linear;animation-iteration-count:infinite}
+.launch{animation:launch 1s ease-in forwards}
+/* victory */
+@keyframes shipIn{from{transform:translateX(560px)}to{transform:translateX(0)}}
+@keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes beam{from{transform:scaleX(0);opacity:1}to{transform:scaleX(1);opacity:1}}
+@keyframes beamOff{to{opacity:0}}
+@keyframes burst{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1.25)}100%{opacity:0;transform:scale(1.9)}}
+@keyframes hide{to{opacity:0}}
+@keyframes flyAway{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(-460px,-430px) rotate(-760deg) scale(.2)}}
+@keyframes freeIt{0%{opacity:0;transform:translate(0,0) scale(.3)}60%{opacity:1}100%{opacity:1;transform:translate(330px,-150px) scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.v-ship{animation:shipIn .8s cubic-bezier(.2,.9,.3,1.15) both}
+.v-shipbob{animation:hover 2s ease-in-out .8s infinite}
+.v-beam{transform:scaleX(0);transform-origin:right center;animation:beam .45s ease-out .85s forwards,beamOff .3s 1.45s forwards}
+.v-burst{opacity:0;animation:burst .7s ease-out 1.2s both}
+.v-alien{animation:hide .01s 1.25s forwards}
+.v-dizzy{opacity:0;animation:flyAway 1.4s ease-in 1.25s forwards}
+.v-free{opacity:0;animation:freeIt 1s cubic-bezier(.2,.9,.3,1.25) 1.45s forwards}
+.v-text{opacity:0;animation:fadeUp .5s 2.3s forwards}
+.v-tw{animation:twinkle 1.2s ease-in-out infinite}
+
+@keyframes laser{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
+.laser{stroke-dasharray:900;animation:laser .35s ease-out forwards}
+@keyframes boom{0%{opacity:0;transform:scale(.2)}40%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1.8)}}
+.boom{animation:boom .7s ease-out forwards}
+@keyframes handTap{0%{transform:translate(var(--fx),var(--fy)) scale(1)}35%{transform:translate(var(--fx),var(--fy)) scale(.78)}55%{transform:translate(var(--fx),var(--fy)) scale(1)}100%{transform:translate(var(--fx),var(--fy)) scale(1)}}
+@keyframes handDrag{0%{transform:translate(var(--fx),var(--fy)) scale(1)}15%{transform:translate(var(--fx),var(--fy)) scale(.8)}75%{transform:translate(var(--tx),var(--ty)) scale(.8)}90%,100%{transform:translate(var(--tx),var(--ty)) scale(1)}}
+@keyframes hintPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,224,138,.95),0 0 18px 4px rgba(255,200,61,.8)}50%{box-shadow:0 0 0 10px rgba(255,224,138,0),0 0 36px 12px rgba(255,200,61,.95)}}
+.hintGlow{animation:hintPulse 1s ease-in-out infinite!important;outline:4px solid #FFE08A!important;z-index:6}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,200,61,.7)}50%{box-shadow:0 0 0 12px rgba(255,200,61,0)}}
+.tapme{animation:glowPulse 1.2s ease-in-out infinite}
+@keyframes popIn{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+.pop{animation:popIn .35s ease-out}
+</style>
+</helmet>
+<div data-board="1" class="space" dir="rtl" onPointerMove="{{move}}" onPointerUp="{{up}}" onPointerLeave="{{cancel}}" style="width: 1180px; height: 820px; box-sizing: border-box; font-family: Fredoka, Rubik, sans-serif; color: #FFFFFF; position: relative; overflow: hidden; background-image: linear-gradient(rgba(14,10,46,0.35), rgba(14,10,46,0.6)), url('assets/bg.jpg'); background-size: cover; background-position: center"><sc-if value="{{isHub}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; padding: 22px 36px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; z-index: 3">
+        <a href="{{mapHref}}" aria-label="חזרה למפה" style="width: 92px; height: 92px; border-radius: 50%; background: rgba(36,28,92,0.88); display: flex; align-items: center; justify-content: center; text-decoration: none"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+          <span style="font-size: 17px; color: #C9C3F2">{{levelLabel}}</span>
+          <span style="font-size: 36px; font-weight: 700; text-shadow: 0 2px 12px rgba(0,0,0,0.6)">{{title}}</span>
+        </div>
+        <div style="display: flex; gap: 4px; background: rgba(23,18,61,0.7); border-radius: 999px; padding: 6px 12px" aria-label="משחקים שהושלמו">
+          <sc-for list="{{hubStars}}" as="s" hint-placeholder-count="4"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="{{s.fill}}"/></svg></sc-for>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 150px; gap: 14px">
+        <button onClick="{{openLesson}}" data-hub="lesson" style="border-radius: 22px; border: 3px solid #FFFFFF; {{lessonCardStyle}}; color: #FFFFFF; cursor: pointer; display: flex; align-items: center; gap: 12px; font-family: Fredoka, Rubik, sans-serif; padding: 10px 16px; text-align: right">
+          <span style="font-size: 54px; line-height: 1">📖</span>
+          <span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 24px; font-weight: 700">שִׁעוּר עִם נוֹגָה</span><span style="font-size: 15px; color: #C9C3F2">מַתְחִילִים כָּאן</span></span>
+        </button>
+        <sc-for list="{{hubGames}}" as="hg" hint-placeholder-count="7">
+          <button onClick="{{hg.open}}" data-hub="{{hg.gid}}" style="border-radius: 22px; background: rgba(36,28,92,0.9); color: #FFFFFF; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-family: Fredoka, Rubik, sans-serif; text-align: right; {{hg.cardStyle}}">
+            <span style="font-size: 48px; line-height: 1; flex-shrink: 0">{{hg.icon}}</span>
+            <span style="display: flex; flex-direction: column; gap: 4px; min-width: 0; align-items: flex-start">
+              <span style="font-size: 19px; font-weight: 700; line-height: 1.15">{{hg.title}}</span>
+              <span style="font-size: 13px; color: #C9C3F2; line-height: 1.25">{{hg.desc}}</span>
+              <span style="{{hg.badgeStyle}}">{{hg.badge}}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="position: absolute; left: 40px; bottom: 26px; display: flex; align-items: flex-end; gap: 18px">
+        <div style="position: relative; width: 170px; height: 170px">
+          <img src="{{planetImg}}" alt="הכוכב של השלב" style="width: 170px; height: 170px; object-fit: contain; filter: drop-shadow(0 0 30px rgba(255,200,61,0.35))">
+          <img src="{{alienImg}}" alt="החייזר ששובה את הכוכב" style="position: absolute; right: -40px; bottom: -6px; width: 110px; height: 110px; object-fit: contain" class="bob">
+        </div>
+        <sc-if value="{{hasNext}}" hint-placeholder-val="{{true}}">
+          <a href="{{nextHref}}" style="margin-bottom: 20px; background: #FFC83D; color: #17123D; border-radius: 999px; padding: 12px 26px; font-size: 22px; font-weight: 700; text-decoration: none; box-shadow: 0 6px 0 #D49D10">{{nextLabel}}</a>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if><sc-if value="{{isLesson}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; top: 20px; left: 36px; right: 36px; display: flex; align-items: center; justify-content: space-between; z-index: 6">
+      <button onClick="{{goHub}}" aria-label="חזרה לתחנה" style="width: 92px; height: 92px; border-radius: 50%; border: 0; background: rgba(36,28,92,0.88); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <span style="font-size: 30px; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.5)">{{lessonTitle}}</span>
+      <span style="width: 54px"></span>
+    </div>
+    <div style="position: absolute; top: 92px; left: 36px; right: 36px; height: 470px; {{lessonGrid}}">
+      <sc-for list="{{lessonCards}}" as="c" hint-placeholder-count="12">
+        <button onClick="{{c.tap}}" style="{{c.style}}">
+          <sc-if value="{{c.hasPic}}" hint-placeholder-val="{{false}}"><span style="{{c.picStyle}}">{{c.pic}}</span></sc-if>
+          <span style="{{c.tStyle}}">{{c.t}}</span>
+          <sc-if value="{{c.hasSub}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; opacity: 0.85">{{c.sub}}</span></sc-if>
+        </button>
+      </sc-for>
+    </div>
+    <div style="position: absolute; left: 36px; bottom: 22px; width: 640px; height: 220px; border-radius: 26px; background: rgba(23,18,61,0.82); border: 2px solid rgba(201,195,242,0.35); display: flex; align-items: center; justify-content: center; gap: 22px; padding: 12px 20px; box-sizing: border-box">
+      <sc-if value="{{noSel}}" hint-placeholder-val="{{true}}"><span style="font-size: 22px; color: #C9C3F2; text-align: center">בּוֹחֲרִים כַּרְטִיס לְמַעְלָה ⬆</span></sc-if>
+      <sc-if value="{{hasSel}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0">
+          <div style="display: flex; align-items: center; gap: 14px"><span style="font-size: 54px; line-height: 1">{{selPic}}</span><span style="{{selStyle}}">{{selT}}</span></div>
+          <span style="font-size: 16px; color: #C9C3F2">{{selSub}}</span>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center">
+            <sc-for list="{{selParts}}" as="pt" hint-placeholder-count="0"><button onClick="{{pt.tap}}" style="{{pt.style}}">{{pt.t}}</button></sc-for>
+          </div>
+        </div>
+        <sc-if value="{{selVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{selVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{selVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{selVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{selVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{selVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{selVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{selVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{selVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{selVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{selVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{selVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{selVis.line.arcStyle}}"></div>
+          <span style="{{selVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+      </sc-if>
+    </div>
+  </sc-if><sc-if value="{{isGame}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; top: 20px; left: 36px; right: 36px; display: flex; align-items: center; justify-content: space-between; z-index: 6">
+      <button onClick="{{goHub}}" aria-label="חזרה לתחנה" style="width: 92px; height: 92px; border-radius: 50%; border: 0; background: rgba(36,28,92,0.88); cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 34px">{{gameIcon}}</span><span style="font-size: 28px; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,0.5)">{{gameTitle}}</span></div>
+      <div style="display: flex; gap: 4px; background: rgba(23,18,61,0.7); border-radius: 999px; padding: 6px 12px">
+        <sc-for list="{{progress}}" as="s" hint-placeholder-count="5"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="{{s.fill}}"/></svg></sc-for>
+      </div>
+    </div>
+    <sc-if value="{{is_choose}}" hint-placeholder-val="{{false}}">
+      <span data-kind="choose" style="display: none"></span>
+      <div style="position: absolute; top: 92px; left: 36px; right: 36px; height: 520px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 14px">
+        <sc-if value="{{hasStory}}" hint-placeholder-val="{{false}}">
+          <div style="align-self: center; max-width: 1040px; padding: 12px 22px; border-radius: 22px; background: rgba(255,255,255,0.95); color: #17123D; display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: center">
+            <sc-for list="{{storyLines}}" as="sl" hint-placeholder-count="4"><button onClick="{{sl.tap}}" style="border: 0; background: transparent; cursor: pointer; font-family: Rubik, Fredoka, sans-serif; font-size: 22px; line-height: 1.5; color: #17123D; padding: 0">{{sl.t}}</button></sc-for>
+          </div>
+        </sc-if>
+        <div style="align-self: center; min-width: 440px; max-width: 1040px; padding: 16px 64px 18px; border-radius: 28px; background: rgba(23,18,61,0.80); border: 2px solid rgba(201,195,242,0.35); display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; ">
+      <button onClick="{{replay}}" aria-label="להשמיע שוב" style="position: absolute; top: 12px; right: 12px; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+      <sc-if value="{{hasPSub}}" hint-placeholder-val="{{true}}"><span style="font-size: 18px; color: #C9C3F2">{{pSub}}</span></sc-if>
+      <sc-if value="{{hasPPic}}" hint-placeholder-val="{{false}}"><span style="font-size: 88px; line-height: 1.05">{{pPic}}</span></sc-if>
+      <sc-if value="{{hasPT}}" hint-placeholder-val="{{true}}"><span style="{{pTStyle}}">{{pT}}</span></sc-if>
+      <sc-if value="{{pVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{pVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{pVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{pVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{pVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{pVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{pVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{pVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{pVis.line.arcStyle}}"></div>
+          <span style="{{pVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+    </div>
+        <div style="{{optsWrap}}">
+        <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+          <button onClick="{{o.pick}}" class="{{o.cls}}" data-ok="{{o.ok}}" style="{{o.style}}">
+            <sc-if value="{{o.rocket}}" hint-placeholder-val="{{false}}"><span style="font-size: 40px; line-height: 1">🚀</span></sc-if>
+            <sc-if value="{{o.hasPic}}" hint-placeholder-val="{{false}}"><span style="{{o.picStyle}}">{{o.pic}}</span></sc-if>
+            <sc-if value="{{o.hasT}}" hint-placeholder-val="{{true}}"><span style="{{o.tStyle}}">{{o.t}}</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{is_path}}" hint-placeholder-val="{{false}}">
+      <span data-kind="path" style="display: none"></span>
+      <div style="position: absolute; top: 88px; left: 36px; right: 36px; height: 360px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 10px">
+        <sc-if value="{{hasStory}}" hint-placeholder-val="{{false}}">
+          <div style="align-self: center; max-width: 1040px; padding: 8px 18px; border-radius: 18px; background: rgba(255,255,255,0.95); color: #17123D; display: flex; flex-wrap: wrap; gap: 2px 8px; justify-content: center">
+            <sc-for list="{{storyLines}}" as="sl" hint-placeholder-count="4"><button onClick="{{sl.tap}}" style="border: 0; background: transparent; cursor: pointer; font-family: Rubik, Fredoka, sans-serif; font-size: 18px; line-height: 1.4; color: #17123D; padding: 0">{{sl.t}}</button></sc-for>
+          </div>
+        </sc-if>
+        <div style="align-self: center; min-width: 440px; max-width: 1040px; padding: 16px 64px 18px; border-radius: 28px; background: rgba(23,18,61,0.80); border: 2px solid rgba(201,195,242,0.35); display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; padding: 10px 64px 12px">
+      <button onClick="{{replay}}" aria-label="להשמיע שוב" style="position: absolute; top: 12px; right: 12px; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+      <sc-if value="{{hasPSub}}" hint-placeholder-val="{{true}}"><span style="font-size: 18px; color: #C9C3F2">{{pSub}}</span></sc-if>
+      <sc-if value="{{hasPPic}}" hint-placeholder-val="{{false}}"><span style="font-size: 88px; line-height: 1.05">{{pPic}}</span></sc-if>
+      <sc-if value="{{hasPT}}" hint-placeholder-val="{{true}}"><span style="{{pTStyle}}">{{pT}}</span></sc-if>
+      <sc-if value="{{pVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{pVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{pVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{pVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{pVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{pVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{pVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{pVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{pVis.line.arcStyle}}"></div>
+          <span style="{{pVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+    </div>
+        <div style="{{optsWrap}}">
+        <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+          <button onClick="{{o.pick}}" class="{{o.cls}}" data-ok="{{o.ok}}" style="{{o.style}}">
+            <sc-if value="{{o.rocket}}" hint-placeholder-val="{{false}}"><span style="font-size: 40px; line-height: 1">🚀</span></sc-if>
+            <sc-if value="{{o.hasPic}}" hint-placeholder-val="{{false}}"><span style="{{o.picStyle}}">{{o.pic}}</span></sc-if>
+            <sc-if value="{{o.hasT}}" hint-placeholder-val="{{true}}"><span style="{{o.tStyle}}">{{o.t}}</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+      </div>
+      <sc-for list="{{stones}}" as="st" hint-placeholder-count="7"><div style="{{st.style}}">{{st.label}}</div></sc-for>
+      <div style="{{astro}}" class="{{astroCls}}">🧑‍🚀</div>
+    </sc-if>
+    <sc-if value="{{is_shoot}}" hint-placeholder-val="{{false}}">
+      <span data-kind="shoot" style="display: none"></span>
+      <sc-for list="{{rocks}}" as="rk" hint-placeholder-count="4"><button onClick="{{rk.pick}}" class="{{rk.cls}}" data-ok="{{rk.ok}}" style="{{rk.style}}">{{rk.t}}</button></sc-for>
+      <svg width="1180" height="820" viewBox="0 0 1180 820" aria-hidden="true" style="{{laser}}; pointer-events: none; z-index: 4"><line class="laser" x1="590" y1="520" x2="{{laserX}}" y2="{{laserY}}" stroke="#FFE08A" stroke-width="8" stroke-linecap="round"/></svg>
+      <svg class="boom" viewBox="0 0 100 100" aria-hidden="true" style="{{boom}}; pointer-events: none; z-index: 5"><path d="M50 2l9 30 31-6-23 22 23 22-31-6-9 30-9-30-31 6 23-22L10 26l31 6z" fill="#FFE08A"/><circle cx="50" cy="50" r="14" fill="#FFFFFF"/></svg>
+      <div style="position: absolute; top: 340px; left: 0; right: 0; display: flex; justify-content: center"><div style="align-self: center; min-width: 440px; max-width: 1040px; padding: 16px 64px 18px; border-radius: 28px; background: rgba(23,18,61,0.80); border: 2px solid rgba(201,195,242,0.35); display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; min-width: 360px; padding: 10px 64px">
+      <button onClick="{{replay}}" aria-label="להשמיע שוב" style="position: absolute; top: 12px; right: 12px; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+      <sc-if value="{{hasPSub}}" hint-placeholder-val="{{true}}"><span style="font-size: 18px; color: #C9C3F2">{{pSub}}</span></sc-if>
+      <sc-if value="{{hasPPic}}" hint-placeholder-val="{{false}}"><span style="font-size: 88px; line-height: 1.05">{{pPic}}</span></sc-if>
+      <sc-if value="{{hasPT}}" hint-placeholder-val="{{true}}"><span style="{{pTStyle}}">{{pT}}</span></sc-if>
+      <sc-if value="{{pVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{pVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{pVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{pVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{pVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{pVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{pVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{pVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{pVis.line.arcStyle}}"></div>
+          <span style="{{pVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+    </div></div>
+      <img src="{{shipImg}}" alt="החללית" style="position: absolute; left: 480px; top: 500px; width: 220px; height: 140px; object-fit: contain; z-index: 3">
+    </sc-if>
+    <sc-if value="{{is_catch}}" hint-placeholder-val="{{false}}">
+      <span data-kind="catch" style="display: none"></span>
+      <div style="position: absolute; top: 90px; left: 0; right: 0; bottom: 0; overflow: hidden">
+        <sc-for list="{{fallers}}" as="f" hint-placeholder-count="4"><button onClick="{{f.pick}}" class="{{f.cls}}" data-ok="{{f.ok}}" style="{{f.style}}">{{f.t}}</button></sc-for>
+      </div>
+      <div style="position: absolute; top: 92px; left: 0; right: 0; display: flex; justify-content: center; z-index: 5"><div style="align-self: center; min-width: 440px; max-width: 1040px; padding: 16px 64px 18px; border-radius: 28px; background: rgba(23,18,61,0.80); border: 2px solid rgba(201,195,242,0.35); display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; min-width: 300px; padding: 8px 64px">
+      <button onClick="{{replay}}" aria-label="להשמיע שוב" style="position: absolute; top: 12px; right: 12px; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+      <sc-if value="{{hasPSub}}" hint-placeholder-val="{{true}}"><span style="font-size: 18px; color: #C9C3F2">{{pSub}}</span></sc-if>
+      <sc-if value="{{hasPPic}}" hint-placeholder-val="{{false}}"><span style="font-size: 88px; line-height: 1.05">{{pPic}}</span></sc-if>
+      <sc-if value="{{hasPT}}" hint-placeholder-val="{{true}}"><span style="{{pTStyle}}">{{pT}}</span></sc-if>
+      <sc-if value="{{pVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{pVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{pVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{pVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{pVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{pVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{pVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{pVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{pVis.line.arcStyle}}"></div>
+          <span style="{{pVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+    </div></div>
+    </sc-if>
+    <sc-if value="{{is_keypad}}" hint-placeholder-val="{{false}}">
+      <span data-kind="keypad" style="display: none"></span>
+      <div style="position: absolute; top: 92px; left: 36px; right: 36px; height: 530px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; gap: 12px">
+        <div style="align-self: center; min-width: 440px; max-width: 1040px; padding: 16px 64px 18px; border-radius: 28px; background: rgba(23,18,61,0.80); border: 2px solid rgba(201,195,242,0.35); display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; ">
+      <button onClick="{{replay}}" aria-label="להשמיע שוב" style="position: absolute; top: 12px; right: 12px; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+      <sc-if value="{{hasPSub}}" hint-placeholder-val="{{true}}"><span style="font-size: 18px; color: #C9C3F2">{{pSub}}</span></sc-if>
+      <sc-if value="{{hasPPic}}" hint-placeholder-val="{{false}}"><span style="font-size: 88px; line-height: 1.05">{{pPic}}</span></sc-if>
+      <sc-if value="{{hasPT}}" hint-placeholder-val="{{true}}"><span style="{{pTStyle}}">{{pT}}</span></sc-if>
+      <sc-if value="{{pVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{pVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{pVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{pVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{pVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{pVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{pVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{pVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{pVis.line.arcStyle}}"></div>
+          <span style="{{pVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+    </div>
+        <div style="display: flex; align-items: center; gap: 18px">
+          <div class="{{shakeSlots}}" style="{{kDir}}"><sc-for list="{{kSlots}}" as="ks" hint-placeholder-count="2"><div style="{{ks.style}}">{{ks.t}}</div></sc-for></div>
+          <sc-if value="{{hasComposed}}" hint-placeholder-val="{{false}}"><span style="font-family: Rubik, Fredoka, sans-serif; font-size: 64px; font-weight: 700; color: #FFC83D">= {{kComposed}}</span></sc-if>
+          <button onClick="{{keyBack}}" aria-label="מחיקה" style="width: 64px; height: 64px; border-radius: 50%; border: 0; background: rgba(255,255,255,0.15); color: #FFFFFF; font-size: 28px; cursor: pointer">⌫</button>
+        </div>
+        <div style="{{keysWrap}}"><sc-for list="{{keys}}" as="k" hint-placeholder-count="10"><button onClick="{{k.press}}" class="{{k.cls}}" data-ok="{{k.ok}}" style="{{k.style}}">{{k.t}}</button></sc-for></div>
+      </div>
+    </sc-if>
+    <sc-if value="{{is_puzzle}}" hint-placeholder-val="{{false}}">
+      <span data-kind="puzzle" style="display: none"></span>
+      <div style="position: absolute; top: 92px; left: 36px; right: 36px; height: 520px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; gap: 12px">
+        <div style="align-self: center; min-width: 440px; max-width: 1040px; padding: 16px 64px 18px; border-radius: 28px; background: rgba(23,18,61,0.80); border: 2px solid rgba(201,195,242,0.35); display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; ">
+      <button onClick="{{replay}}" aria-label="להשמיע שוב" style="position: absolute; top: 12px; right: 12px; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+      <sc-if value="{{hasPSub}}" hint-placeholder-val="{{true}}"><span style="font-size: 18px; color: #C9C3F2">{{pSub}}</span></sc-if>
+      <sc-if value="{{hasPPic}}" hint-placeholder-val="{{false}}"><span style="font-size: 88px; line-height: 1.05">{{pPic}}</span></sc-if>
+      <sc-if value="{{hasPT}}" hint-placeholder-val="{{true}}"><span style="{{pTStyle}}">{{pT}}</span></sc-if>
+      <sc-if value="{{pVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{pVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{pVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{pVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{pVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{pVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{pVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{pVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{pVis.line.arcStyle}}"></div>
+          <span style="{{pVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+    </div>
+        <div class="{{shakeSlots}}" style="{{pzDir}}"><sc-for list="{{pzSlots}}" as="zs" hint-placeholder-count="3"><button onClick="{{zs.tap}}" data-drop="{{zs.drop}}" style="{{zs.style}}">{{zs.t}}</button></sc-for></div>
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center"><sc-for list="{{pieces}}" as="pc" hint-placeholder-count="4"><button onPointerDown="{{pc.down}}" class="{{pc.cls}}" data-ok="{{pc.ok}}" style="{{pc.style}}">{{pc.t}}</button></sc-for></div>
+      </div>
+    </sc-if>
+    <sc-if value="{{is_memory}}" hint-placeholder-val="{{false}}">
+      <span data-kind="memory" style="display: none"></span>
+      <div style="position: absolute; top: 120px; left: 36px; right: 36px; display: flex; flex-direction: column; align-items: center">
+        <div style="{{memGrid}}"><sc-for list="{{mcards}}" as="mc" hint-placeholder-count="8"><button onClick="{{mc.flip}}" data-k="{{mc.k}}" style="{{mc.style}}"><sc-if value="{{mc.back}}" hint-placeholder-val="{{true}}"><span style="font-size: 54px">⭐</span></sc-if><span style="font-size: 72px; line-height: 1">{{mc.pic}}</span><span style="{{mc.tStyle}}">{{mc.t}}</span></button></sc-for></div>
+      </div>
+    </sc-if>
+    <sc-if value="{{is_match}}" hint-placeholder-val="{{false}}">
+      <span data-kind="match" style="display: none"></span>
+      <svg width="1180" height="820" viewBox="0 0 1180 820" aria-hidden="true" style="position: absolute; left: 0; top: 0; pointer-events: none; z-index: 2">
+        <sc-for list="{{mLines}}" as="ml" hint-placeholder-count="0"><line x1="{{ml.x1}}" y1="{{ml.y1}}" x2="{{ml.x2}}" y2="{{ml.y2}}" stroke="{{ml.c}}" stroke-width="7" stroke-linecap="round"/></sc-for>
+        <line x1="{{rubber.x1}}" y1="{{rubber.y1}}" x2="{{rubber.x2}}" y2="{{rubber.y2}}" stroke="#FFC83D" stroke-width="7" stroke-dasharray="14 10" stroke-linecap="round" visibility="{{rubber.show}}"/>
+      </svg>
+      <sc-for list="{{mLeft}}" as="ma" hint-placeholder-count="4"><button onPointerDown="{{ma.down}}" data-k="{{ma.k}}" style="{{ma.style}}"><span style="font-size: 44px; line-height: 1">{{ma.pic}}</span><span>{{ma.t}}</span><span style="{{ma.dot}}"></span></button></sc-for>
+      <sc-for list="{{mRight}}" as="mb" hint-placeholder-count="4"><button onClick="{{mb.tap}}" class="{{mb.cls}}" data-drop="{{mb.drop}}" data-k="{{mb.k}}" style="{{mb.style}}"><span style="line-height: 1">{{mb.pic}}</span><span>{{mb.t}}</span><span style="{{mb.dot}}"></span></button></sc-for>
+    </sc-if>
+    <sc-if value="{{is_sort}}" hint-placeholder-val="{{false}}">
+      <span data-kind="sort" style="display: none"></span>
+      <div style="position: absolute; top: 96px; left: 36px; right: 36px; height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; gap: 16px">
+        <div style="display: flex; align-items: center; gap: 16px">
+          <button onClick="{{replay}}" aria-label="להשמיע שוב" style="width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+          <sc-if value="{{sHas}}" hint-placeholder-val="{{true}}"><button onPointerDown="{{sItem.down}}" data-k="{{sItem.k}}" style="{{sItemStyle}}"><span>{{sItem.pic}}</span><span>{{sItem.t}}</span></button></sc-if>
+          <span style="font-size: 18px; color: #C9C3F2">{{sLeft}}</span>
+        </div>
+        <div style="display: flex; gap: 28px; justify-content: center">
+          <sc-for list="{{bins}}" as="bn" hint-placeholder-count="3"><button onClick="{{bn.tap}}" class="{{bn.cls}}" data-drop="{{bn.drop}}" data-k="{{bn.k}}" style="{{bn.style}}"><span style="font-size: 50px; line-height: 1">{{bn.pic}}</span><span style="{{bn.tStyle}}">{{bn.t}}</span></button></sc-for>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{is_bowling}}" hint-placeholder-val="{{false}}">
+      <span data-kind="bowling" style="display: none"></span>
+      <div style="position: absolute; top: 86px; left: 36px; right: 36px; height: 370px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 8px">
+        <div style="align-self: center; min-width: 440px; max-width: 1040px; padding: 16px 64px 18px; border-radius: 28px; background: rgba(23,18,61,0.80); border: 2px solid rgba(201,195,242,0.35); display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; padding: 8px 64px 10px">
+      <button onClick="{{replay}}" aria-label="להשמיע שוב" style="position: absolute; top: 12px; right: 12px; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+      <sc-if value="{{hasPSub}}" hint-placeholder-val="{{true}}"><span style="font-size: 18px; color: #C9C3F2">{{pSub}}</span></sc-if>
+      <sc-if value="{{hasPPic}}" hint-placeholder-val="{{false}}"><span style="font-size: 88px; line-height: 1.05">{{pPic}}</span></sc-if>
+      <sc-if value="{{hasPT}}" hint-placeholder-val="{{true}}"><span style="{{pTStyle}}">{{pT}}</span></sc-if>
+      <sc-if value="{{pVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{pVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{pVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{pVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{pVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{pVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{pVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{pVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{pVis.line.arcStyle}}"></div>
+          <span style="{{pVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+    </div>
+        <div style="{{optsWrap}}">
+        <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+          <button onClick="{{o.pick}}" class="{{o.cls}}" data-ok="{{o.ok}}" style="{{o.style}}">
+            <sc-if value="{{o.rocket}}" hint-placeholder-val="{{false}}"><span style="font-size: 40px; line-height: 1">🚀</span></sc-if>
+            <sc-if value="{{o.hasPic}}" hint-placeholder-val="{{false}}"><span style="{{o.picStyle}}">{{o.pic}}</span></sc-if>
+            <sc-if value="{{o.hasT}}" hint-placeholder-val="{{true}}"><span style="{{o.tStyle}}">{{o.t}}</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+      </div>
+      <div style="position: absolute; left: 40px; right: 40px; top: 470px; height: 140px; border-radius: 22px; background: linear-gradient(90deg, #6B4A2E, #C99A62 12%, #E2B87E 50%, #C99A62 88%, #6B4A2E); box-shadow: inset 0 0 0 4px rgba(0,0,0,0.25), 0 10px 30px rgba(0,0,0,0.45); overflow: hidden; direction: ltr">
+        <div style="position: absolute; left: 0; right: 0; top: 0; height: 14px; background: rgba(0,0,0,0.35)"></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 14px; background: rgba(0,0,0,0.35)"></div>
+        <sc-for list="{{pins}}" as="pn" hint-placeholder-count="10"><div style="{{pn.style}}"></div></sc-for>
+        <div style="{{ball}}"></div>
+        <sc-if value="{{bowlerAlien}}" hint-placeholder-val="{{false}}"><img src="{{bowlerImg}}" alt="החייזר זורק" style="position: absolute; right: 30px; top: 8px; width: 120px; height: 120px; object-fit: contain"></sc-if>
+        <div style="{{strikeShow}}; position: absolute; left: 260px; top: 34px; align-items: center; justify-content: center; font-family: Fredoka, Rubik, sans-serif; font-size: 56px; font-weight: 700; color: #FFC83D; text-shadow: 0 3px 0 #17123D, 0 0 20px rgba(255,200,61,0.8)" class="popin">סְטְרַייק!</div>
+      </div>
+      <div style="position: absolute; left: 40px; top: 622px; display: flex; align-items: center; gap: 14px; background: rgba(23,18,61,0.85); border-radius: 18px; padding: 8px 18px; z-index: 5">
+        <span style="font-size: 22px; font-weight: 700">🧑‍🚀 אֲנִי {{scoreMe}}</span>
+        <span style="font-size: 22px; font-weight: 700; color: #9BE59B">👽 הַחַיְזָר {{scoreAl}}</span>
+        <div style="display: flex; gap: 6px"><sc-for list="{{frameDots}}" as="fd" hint-placeholder-count="5"><div style="{{fd.style}}"></div></sc-for></div>
+      </div>
+    </sc-if>
+    <sc-if value="{{is_order}}" hint-placeholder-val="{{false}}">
+      <span data-kind="order" style="display: none"></span>
+      <div style="position: absolute; top: 92px; left: 36px; right: 36px; height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; gap: 14px">
+        <div style="align-self: center; min-width: 440px; max-width: 1040px; padding: 16px 64px 18px; border-radius: 28px; background: rgba(23,18,61,0.80); border: 2px solid rgba(201,195,242,0.35); display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; padding: 10px 64px">
+      <button onClick="{{replay}}" aria-label="להשמיע שוב" style="position: absolute; top: 12px; right: 12px; width: 84px; height: 84px; border-radius: 50%; border: 0; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg></button>
+      <sc-if value="{{hasPSub}}" hint-placeholder-val="{{true}}"><span style="font-size: 18px; color: #C9C3F2">{{pSub}}</span></sc-if>
+      <sc-if value="{{hasPPic}}" hint-placeholder-val="{{false}}"><span style="font-size: 88px; line-height: 1.05">{{pPic}}</span></sc-if>
+      <sc-if value="{{hasPT}}" hint-placeholder-val="{{true}}"><span style="{{pTStyle}}">{{pT}}</span></sc-if>
+      <sc-if value="{{pVis.isTen}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 18px; direction: rtl">
+          <sc-for list="{{pVis.tenframe}}" as="fr" hint-placeholder-count="1">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 3px solid #C9C3F2; border-radius: 14px; direction: rtl">
+              <sc-for list="{{fr.cells}}" as="cl" hint-placeholder-count="10"><div style="{{cl.style}}"></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isRods}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 22px; align-items: flex-end; direction: ltr">
+          <div style="display: flex; gap: 6px; align-items: flex-end">
+            <sc-for list="{{pVis.rods}}" as="rd" hint-placeholder-count="3"><div style="width: 20px; height: 150px; border-radius: 4px; background: repeating-linear-gradient(#5AB0FF 0 13px, #17123D 13px 15px); box-shadow: 0 0 8px rgba(90,176,255,0.6)"></div></sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px">
+            <sc-for list="{{pVis.ones}}" as="on" hint-placeholder-count="4"><div style="width: 20px; height: 20px; border-radius: 4px; background: #FFC83D"></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isGroups}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; justify-content: center">
+          <sc-for list="{{pVis.groups}}" as="gr" hint-placeholder-count="3"><div style="border: 3px dashed #34D1BF; border-radius: 40px; padding: 12px 16px; font-size: 30px; max-width: 160px; text-align: center; line-height: 1.3">{{gr.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isArray}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 2px; align-items: center">
+          <sc-for list="{{pVis.array}}" as="ar" hint-placeholder-count="3"><div style="font-size: 30px; letter-spacing: 6px; line-height: 1.15">{{ar.t}}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{pVis.isLine}}" hint-placeholder-val="{{false}}">
+        <div style="position: relative; width: {{pVis.line.w}}px; height: 90px; margin: 20px 30px 0; direction: ltr">
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 3px; background: #C9C3F2"></div>
+          <sc-for list="{{pVis.line.ticks}}" as="tk" hint-placeholder-count="11"><div style="{{tk.style}}"><div style="{{tk.tick}}"></div><span style="{{tk.lab}}">{{tk.label}}</span></div></sc-for>
+          <div style="{{pVis.line.arcStyle}}"></div>
+          <span style="{{pVis.line.markStyle}}">🛸</span>
+        </div>
+      </sc-if>
+    </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; width: 1040px">
+          <sc-for list="{{oCards}}" as="oc" hint-placeholder-count="4"><button onClick="{{oc.tap}}" class="{{oc.cls}}" data-pos="{{oc.pos}}" style="{{oc.style}}"><sc-if value="{{oc.hasNum}}" hint-placeholder-val="{{false}}"><span style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: #34D1BF; color: #17123D; display: flex; align-items: center; justify-content: center; font-weight: 700">{{oc.num}}</span></sc-if><span style="font-size: 38px; line-height: 1">{{oc.pic}}</span><span>{{oc.t}}</span></button></sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if><div style="position: absolute; bottom: 22px; right: 30px; display: flex; align-items: flex-end; gap: 12px; z-index: 50">
+    <div style="width: 132px; height: 158px; border-radius: 66px 66px 18px 18px; border: 3px solid #34D1BF; background: rgba(52,209,191,0.20); overflow: hidden; box-shadow: {{nogaGlow}}; flex-shrink: 0; position: relative">
+      <img src="{{nogaImg}}" alt="נוגה" style="width: 100%; height: 100%; object-fit: cover; object-position: top">
+      <video data-noga-vid="{{vidKey}}" muted playsinline loop preload="auto" aria-hidden="true" style="{{nogaVidStyle}}"><source src="video/noga-talk.mp4" type="video/mp4"><source src="video/noga-talk.webm" type="video/webm"></video>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start">
+      <sc-if value="{{needTap}}" hint-placeholder-val="{{false}}"><span class="tapme" style="background: #FFC83D; color: #17123D; border-radius: 999px; padding: 4px 14px; font-size: 16px; font-weight: 700">לוֹחֲצִים כְּדֵי לִשְׁמֹעַ אֶת נוֹגָה</span></sc-if>
+      <button onClick="{{sayAgain}}" style="display: flex; gap: 8px; align-items: flex-start; background: #FFFFFF; color: #17123D; border: 0; border-radius: 22px 22px 22px 6px; padding: 12px 18px; font-family: Rubik, Fredoka, sans-serif; font-size: 20px; font-weight: 600; max-width: 360px; text-align: right; cursor: pointer; line-height: 1.4">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF7A59" stroke-width="2.4" aria-hidden="true" style="flex-shrink: 0"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M19 6a8 8 0 0 1 0 12"/></svg><span>{{nogaSays}}</span>
+      </button>
+    </div>
+  </div>
+  <sc-if value="{{holding}}" hint-placeholder-val="{{false}}"><div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 35; pointer-events: auto"></div><style>[data-ok], [data-k], [data-drop], .ans { opacity: 0.55 !important; filter: saturate(0.5); }</style><div class="tapme" aria-live="polite" style="position: absolute; bottom: 196px; right: 30px; z-index: 36; background: #34D1BF; color: #17123D; border-radius: 999px; padding: 8px 18px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.35)">🔊 מַקְשִׁיבִים לְנוֹגָה</div></sc-if>
+  <sc-if value="{{yourTurn}}" hint-placeholder-val="{{false}}"><div class="pop" style="position: absolute; bottom: 196px; right: 30px; z-index: 36; background: #FFC83D; color: #17123D; border-radius: 999px; padding: 8px 18px; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.35)">👆 עַכְשָׁיו תּוֹרְכֶם!</div></sc-if>
+  <sc-if value="{{needTap}}" hint-placeholder-val="{{false}}"><div style="position: absolute; inset: 0; z-index: 60; background: rgba(8,5,30,0.6); display: flex; align-items: center; justify-content: center">
+    <button onClick="{{sayAgain}}" class="tapme" style="display: flex; align-items: center; gap: 14px; background: #FFC83D; color: #17123D; border: 0; border-radius: 999px; padding: 22px 40px; font: 700 34px Rubik, Fredoka, sans-serif; cursor: pointer; box-shadow: 0 0 40px rgba(255,200,61,0.7)">🔊 לוֹחֲצִים כָּאן וְנוֹגָה מְדַבֶּרֶת</button>
+  </div></sc-if><sc-for list="{{victory}}" as="v" hint-placeholder-count="0">
+    <div style="position: absolute; inset: 0; z-index: 40; background: radial-gradient(circle at 50% 40%, rgba(60,40,140,0.85), rgba(8,5,30,0.97)); overflow: hidden">
+      <img class="v-alien" src="{{alienImg}}" alt="החייזר" style="position: absolute; left: 120px; top: 230px; width: 300px; height: 300px; object-fit: contain">
+      <img class="v-dizzy" src="{{alienDizzy}}" alt="" style="position: absolute; left: 120px; top: 230px; width: 300px; height: 300px; object-fit: contain">
+      <div class="v-beam" style="position: absolute; left: 330px; top: 372px; width: 470px; height: 18px; border-radius: 9px; background: linear-gradient(90deg, #FFFFFF, #FFF3A6 30%, #FFC83D 70%, #FF7A59); box-shadow: 0 0 22px #FFC83D, 0 0 50px rgba(255,200,61,0.7)"></div>
+      <svg class="v-burst" width="260" height="260" viewBox="0 0 100 100" aria-hidden="true" style="position: absolute; left: 140px; top: 250px"><path d="M50 2l9 30 31-6-23 22 23 22-31-6-9 30-9-30-31 6 23-22L10 26l31 6z" fill="#FFE08A"/><circle cx="50" cy="50" r="14" fill="#FFFFFF"/></svg>
+      <div class="v-ship" style="position: absolute; right: 70px; top: 270px; width: 360px"><img class="v-shipbob" src="{{shipImg}}" alt="החללית" style="width: 360px; height: 230px; object-fit: contain"></div>
+      <div class="v-free" style="position: absolute; left: 175px; top: 310px; min-width: 190px; height: 190px; padding: 0 26px; box-sizing: border-box; border-radius: 95px; background: #FFFFFF; color: #FF7A59; display: flex; align-items: center; justify-content: center; font-family: Rubik, Fredoka, sans-serif; font-size: {{v.size}}; font-weight: 700; white-space: nowrap; box-shadow: 0 0 0 10px rgba(255,255,255,0.25), 0 0 60px rgba(255,200,61,0.9)">{{v.freed}}</div>
+      <div class="v-text" style="position: absolute; left: 0; right: 0; bottom: 200px; display: flex; flex-direction: column; align-items: center; gap: 16px">
+        <span style="font-size: 52px; font-weight: 700; color: #FFC83D; text-shadow: 0 3px 16px rgba(0,0,0,0.6)">נִצָּחוֹן!</span>
+        <div style="display: flex; gap: 10px"><sc-for list="{{v.stars}}" as="st" hint-placeholder-count="5"><svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.7 5.8 21.2l1.4-7L2 9.4l7-.8z" fill="{{st.fill}}" stroke="#17123D" stroke-width="1"/></svg></sc-for></div>
+        <div style="display: flex; gap: 16px">
+          <button onClick="{{v.hub}}" data-win="hub" style="background: #FFC83D; color: #17123D; border: 0; border-radius: 999px; padding: 26px 52px; font-family: Fredoka, Rubik, sans-serif; font-size: 34px; font-weight: 700; cursor: pointer; box-shadow: 0 7px 0 #D49D10">{{v.hubLabel}}</button>
+          <button onClick="{{v.again}}" data-win="again" style="background: #241C5C; color: #FFFFFF; border: 0; border-radius: 999px; padding: 26px 40px; font-family: Fredoka, Rubik, sans-serif; font-size: 30px; font-weight: 600; cursor: pointer">{{v.againLabel}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-for><div style="{{ghost}}">{{ghostT}}</div><sc-if value="{{hasHand}}" hint-placeholder-val="{{false}}"><div style="{{handStyle}}" aria-hidden="true">👆</div></sc-if><sc-for list="{{retryOv}}" as="rt" hint-placeholder-count="0">
+    <div style="position: absolute; inset: 0; z-index: 45; background: radial-gradient(circle at 50% 40%, rgba(60,40,140,0.85), rgba(8,5,30,0.97)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px">
+      <img src="{{rt.alien}}" alt="החייזר" class="bob" style="width: 220px; height: 220px; object-fit: contain">
+      <span style="font-size: 44px; font-weight: 700; color: #FFC83D; text-shadow: 0 3px 14px rgba(0,0,0,0.6)">כִּמְעַט נִצַּחְתֶּם!</span>
+      <span style="font-size: 24px; color: #E6E1FF">עוֹד פַּעַם אַחַת, וְהַחַיְזָר יִבְרַח</span>
+      <div style="display: flex; gap: 16px">
+        <button onClick="{{rt.again}}" data-win="again" style="background: #FFC83D; color: #17123D; border: 0; border-radius: 999px; padding: 26px 52px; font-family: Fredoka, Rubik, sans-serif; font-size: 34px; font-weight: 700; cursor: pointer; box-shadow: 0 7px 0 #D49D10">מְשַׂחֲקִים שׁוּב</button>
+        <button onClick="{{rt.hub}}" data-win="retryhub" style="background: #241C5C; color: #FFFFFF; border: 0; border-radius: 999px; padding: 26px 40px; font-family: Fredoka, Rubik, sans-serif; font-size: 30px; font-weight: 600; cursor: pointer">לַתַּחֲנָה</button>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":820}}'></script>
+</body>
+</html>

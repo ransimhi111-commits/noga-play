@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>פתיחה – הסיפור</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFC83D}a:hover{color:#FFE08A}
+.space{background-color:#0E0A2E;background-size:cover;background-position:center}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes fall{from{transform:translateY(-160px)}to{transform:translateY(720px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes popIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes launch{0%{transform:translateY(0)}100%{transform:translateY(-700px)}}
+.shake{animation:shake .45s ease}
+.bob{animation:bob 3s ease-in-out infinite}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+.popin{animation:popIn .35s cubic-bezier(.2,.9,.3,1.3) both}
+.fall{animation-name:fall;animation-timing-function:linear;animation-iteration-count:infinite}
+.launch{animation:launch 1s ease-in forwards}
+/* victory */
+@keyframes shipIn{from{transform:translateX(560px)}to{transform:translateX(0)}}
+@keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes beam{from{transform:scaleX(0);opacity:1}to{transform:scaleX(1);opacity:1}}
+@keyframes beamOff{to{opacity:0}}
+@keyframes burst{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1.25)}100%{opacity:0;transform:scale(1.9)}}
+@keyframes hide{to{opacity:0}}
+@keyframes flyAway{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(-460px,-430px) rotate(-760deg) scale(.2)}}
+@keyframes freeIt{0%{opacity:0;transform:translate(0,0) scale(.3)}60%{opacity:1}100%{opacity:1;transform:translate(330px,-150px) scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.v-ship{animation:shipIn .8s cubic-bezier(.2,.9,.3,1.15) both}
+.v-shipbob{animation:hover 2s ease-in-out .8s infinite}
+.v-beam{transform:scaleX(0);transform-origin:right center;animation:beam .45s ease-out .85s forwards,beamOff .3s 1.45s forwards}
+.v-burst{opacity:0;animation:burst .7s ease-out 1.2s both}
+.v-alien{animation:hide .01s 1.25s forwards}
+.v-dizzy{opacity:0;animation:flyAway 1.4s ease-in 1.25s forwards}
+.v-free{opacity:0;animation:freeIt 1s cubic-bezier(.2,.9,.3,1.25) 1.45s forwards}
+.v-text{opacity:0;animation:fadeUp .5s 2.3s forwards}
+.v-tw{animation:twinkle 1.2s ease-in-out infinite}
+</style>
+</helmet>
+<div class="space" dir="rtl" style="width: 1180px; height: 820px; box-sizing: border-box; padding: 24px 36px; display: flex; flex-direction: column; gap: 14px; font-family: Fredoka, Rubik, sans-serif; color: #FFFFFF; position: relative; overflow: hidden; background-image: linear-gradient(rgba(14,10,46,0.30), rgba(14,10,46,0.55)), url('assets/bg.jpg'); ">
+  <audio id="story-audio" src="audio/story.mp3" preload="auto"></audio>
+  <div style="display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 3">
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 40px; font-weight: 700; color: #FFC83D; text-shadow: 0 3px 14px rgba(0,0,0,0.6)">להציל את כוכב נוגה</span>
+      <span style="font-size: 18px; color: #C9C3F2">נוגה מספרת לכם איך הכול התחיל</span>
+    </div>
+    <div style="display: flex; gap: 6px">
+      <sc-for list="{{dots}}" as="d" hint-placeholder-count="7"><span style="{{d.s}}"></span></sc-for>
+    </div>
+  </div>
+  <div style="flex-grow: 1; display: flex; gap: 22px; min-height: 0">
+    <div style="flex-grow: 1; position: relative; border-radius: 30px; background: rgba(23,18,61,0.55); border: 2px solid rgba(201,195,242,0.25); overflow: hidden">
+      <div style="{{sc0}}"><div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 30px">
+        <img src="assets/venus.webp" alt="כוכב נוגה" style="width: 300px; height: 300px; filter: drop-shadow(0 0 40px rgba(255,220,150,0.6))">
+        <img src="assets/noga_friendly.webp" alt="נוגה" style="width: 230px; height: 330px; object-fit: cover; object-position: top; border-radius: 115px 115px 20px 20px; border: 3px solid #34D1BF">
+      </div></div>
+      <div style="{{sc1}}"><div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center">
+        <img src="assets/venus.webp" alt="" style="width: 340px; height: 340px; filter: drop-shadow(0 0 40px rgba(255,220,150,0.6))">
+        <span class="bob" style="position: absolute; top: 60px; right: 150px; font-size: 64px; font-weight: 700; color: #FFC83D">א</span>
+        <span class="bob" style="position: absolute; top: 90px; left: 150px; font-size: 56px; font-weight: 700; color: #34D1BF; animation-delay: .5s">3</span>
+        <span class="bob" style="position: absolute; bottom: 70px; right: 170px; font-size: 52px; font-weight: 700; color: #FF9BD2; animation-delay: 1s">B</span>
+        <span class="bob" style="position: absolute; bottom: 60px; left: 170px; font-size: 60px; font-weight: 700; color: #FFFFFF; animation-delay: 1.4s">ב</span>
+        <span style="position: absolute; top: 40px; left: 50%; font-size: 40px">🎵</span>
+      </div></div>
+      <div style="{{sc2}}"><div style="position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; gap: 6px; padding-bottom: 20px">
+        <img class="bob" src="assets/math.webp" alt="מספרון" style="width: 150px; height: 170px; object-fit: contain">
+        <img class="bob" src="assets/zallon.webp" alt="זללון" style="width: 300px; height: 330px; object-fit: contain; animation-delay: .4s">
+        <img class="bob" src="assets/alien.webp" alt="בלבלון" style="width: 150px; height: 170px; object-fit: contain; animation-delay: .8s">
+        <img class="bob" src="assets/eng.webp" alt="וורדי" style="width: 150px; height: 170px; object-fit: contain; animation-delay: 1.2s">
+      </div></div>
+      <div style="{{sc3}}"><div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 40px">
+        <img src="assets/zallon.webp" alt="זללון בולע אותיות" style="width: 280px; height: 300px; object-fit: contain">
+        <div style="display: flex; flex-direction: column; gap: 18px; align-items: center">
+          <span style="font-size: 50px; letter-spacing: 10px; color: #FFC83D; font-weight: 700">א ב ג 1 2 3</span>
+          <div style="display: flex; gap: 14px"><img src="assets/uranus.webp" alt="" style="width: 90px"><img src="assets/venus.webp" alt="" style="width: 70px"><img src="assets/uranus.webp" alt="" style="width: 60px; filter: hue-rotate(140deg)"></div>
+          <span style="font-size: 22px; color: #C9C3F2">מפוזרים בכל מערכת השמש</span>
+        </div>
+      </div></div>
+      <div style="{{sc4}}"><div style="position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center">
+        <svg width="420" height="340" viewBox="0 0 250 240" aria-hidden="true">
+          <rect x="35" y="80" width="180" height="160" fill="#4A3B8F"/><rect x="15" y="50" width="50" height="190" fill="#5B4AA8"/><rect x="185" y="50" width="50" height="190" fill="#5B4AA8"/>
+          <path d="M15 50l25-36 25 36zM185 50l25-36 25 36z" fill="#B48CFF"/><path d="M105 240v-40a20 20 0 0 1 40 0v40z" fill="#17123D"/>
+        </svg>
+        <div style="position: absolute; bottom: 150px; width: 150px; height: 150px; border-radius: 18px; overflow: hidden; border: 6px solid #8F88C2; background: #2F2675">
+          <img src="assets/noga_tryagain.webp" alt="נוגה כלואה" style="width: 100%; height: 100%; object-fit: cover; object-position: top">
+          <div style="position: absolute; inset: 0; display: flex; justify-content: space-evenly"><div style="width: 7px; background: #8F88C2"></div><div style="width: 7px; background: #8F88C2"></div><div style="width: 7px; background: #8F88C2"></div></div>
+        </div>
+      </div></div>
+      <div style="{{sc5}}"><div style="position: absolute; inset: 0">
+        <img class="bob" src="assets/ship.webp" alt="החללית" style="position: absolute; right: 60px; top: 140px; width: 300px">
+        <img src="assets/alien.webp" alt="" style="position: absolute; left: 70px; top: 70px; width: 130px">
+        <img src="assets/math.webp" alt="" style="position: absolute; left: 230px; top: 200px; width: 110px">
+        <img src="assets/eng.webp" alt="" style="position: absolute; left: 90px; top: 250px; width: 120px">
+        <span style="position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-size: 26px; color: #FFC83D; font-weight: 700">קוראים · מחשבים · מדברים אנגלית</span>
+      </div></div>
+      <div style="{{sc6}}"><div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 30px">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span style="font-size: 90px">🔒</span><span style="font-size: 24px; font-weight: 700; color: #FF7A59">עברית</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span style="font-size: 90px">🔒</span><span style="font-size: 24px; font-weight: 700; color: #FFC83D">חשבון</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span style="font-size: 90px">🔒</span><span style="font-size: 24px; font-weight: 700; color: #34D1BF">אנגלית</span></div>
+        <img class="bob" src="assets/ship.webp" alt="" style="width: 220px">
+      </div></div>
+      <sc-for list="{{startCover}}" as="c" hint-placeholder-count="0">
+        <button onClick="{{c.go}}" style="position: absolute; inset: 0; z-index: 5; border: 0; cursor: pointer; background: rgba(14,10,46,0.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #FFFFFF; font-family: Fredoka, Rubik, sans-serif">
+          <span class="pulse" style="width: 130px; height: 130px; border-radius: 50%; background: #FFC83D; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 50px rgba(255,200,61,0.8)"><svg width="60" height="60" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="#17123D"/></svg></span>
+          <span style="font-size: 30px; font-weight: 700">נוגה מספרת את הסיפור</span>
+          <span style="font-size: 17px; color: #C9C3F2">{{c.note}}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="width: 300px; display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0">
+      <div style="width: 290px; height: 420px; border-radius: 145px 145px 22px 22px; border: 3px solid #34D1BF; background: rgba(52,209,191,0.20); overflow: hidden; box-shadow: {{nogaGlow}}; flex-shrink: 0; position: relative">
+      <video id="noga-vid" poster="assets/noga_talk2.webp" muted playsinline loop preload="auto" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%"><source src="video/noga-talk.mp4" type="video/mp4"><source src="video/noga-talk.webm" type="video/webm"></video>
+    </div>
+      <div style="display: flex; gap: 10px">
+        <button onClick="{{toggle}}" style="background: rgba(36,28,92,0.9); color: #FFFFFF; border: 2px solid #8F88C2; border-radius: 999px; padding: 8px 18px; font-family: Fredoka, Rubik, sans-serif; font-size: 18px; cursor: pointer">{{toggleLabel}}</button>
+        <button onClick="{{restart}}" style="background: rgba(36,28,92,0.9); color: #FFFFFF; border: 2px solid #8F88C2; border-radius: 999px; padding: 8px 18px; font-family: Fredoka, Rubik, sans-serif; font-size: 18px; cursor: pointer">מההתחלה</button>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 20px">
+    <div style="flex-grow: 1; min-height: 64px; background: rgba(255,255,255,0.95); color: #17123D; border-radius: 22px; padding: 12px 22px; font-family: Rubik, Fredoka, sans-serif; font-size: 23px; font-weight: 500; line-height: 1.4; display: flex; align-items: center">{{caption}}</div>
+    <a href="Pilots.dc.html" style="flex-shrink: 0; display: flex; align-items: center; gap: 12px; background: #FFC83D; color: #17123D; border-radius: 999px; padding: 16px 34px; font-size: 28px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 0 #D49D10">יוצאים למסע!</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":820}}'></script>
+</body>
+</html>
