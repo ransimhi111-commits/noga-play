@@ -166,8 +166,27 @@ class Component extends DCLogic {
       } catch (err) {}
     }, kind === 'hint' ? 120 : 700);
   }
-  componentDidMount() { this.say(LV.intro, 'friendly'); }
-  componentWillUnmount() { clearTimeout(this.tHold); clearTimeout(this.tTurn); clearTimeout(this.tIdle); this.stopAudio(); clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); clearTimeout(this.th); clearTimeout(this.th2); }
+  componentDidMount() { this.say(LV.intro, 'friendly'); this.onKey = (e) => this.keyboard(e); window.addEventListener('keydown', this.onKey); }
+  // computer: physical keyboard mirrors the on-screen controls
+  keyboard(e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const g = this.m.g, k = e.key;
+    if (k === 'Escape') { e.preventDefault(); if (this.m.victory) this.goHub(); else if (g) this.goHub(); else if (this.m.screen === 'lesson') this.goHub(); return; }
+    if (this.m.victory) { if (k === 'Enter' || k === ' ') { e.preventDefault(); this.goHub(); } return; }
+    if (!g) return;
+    if (k === ' ' || k === 'Enter') { e.preventDefault(); if (!g.locked && !g.holding) this.say(this.lastIds || [], null); return; }
+    if (g.locked || g.holding) return;
+    if (g.type === 'keypad') {
+      if (k === 'Backspace') { e.preventDefault(); this.keyBack(); return; }
+      const hit = (g.keys || []).find(x => String(x.t) === k || String(x.v) === k);
+      if (hit) { e.preventDefault(); this.key(hit); }
+      return;
+    }
+    if (/^[1-9]$/.test(k) && ['choose', 'shoot', 'path', 'bowling'].indexOf(g.type) >= 0 && g.opts) {
+      const o = g.opts[Number(k) - 1]; if (o && o.i !== g.elim) { e.preventDefault(); this.pickOpt(o); }
+    }
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); clearTimeout(this.tHold); clearTimeout(this.tTurn); clearTimeout(this.tIdle); this.stopAudio(); clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); clearTimeout(this.th); clearTimeout(this.th2); }
 
   // ---------------- voice ----------------
   stopAudio() { this.tok++; this.lip = null; clearInterval(this.mi); clearTimeout(this.t3); clearTimeout(this.wd); try { if (this.au) { this.au.onended = null; this.au.onerror = null; this.au.pause(); } } catch (e) {} this.vidRun(false); if (this.state.speaking) this.setState({ speaking: false }); }
