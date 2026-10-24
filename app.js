@@ -186,6 +186,16 @@
     const [keepPortrait, setKeepPortrait] = R.useState(false);
     const [menu, setMenu] = R.useState(false);
     const [guide, setGuide] = R.useState(false);
+    // parent gate: a grown-up question before the parent area (progress reset, open all levels); valid for 15 minutes
+    const [parentOk, setParentOk] = R.useState(() => { try { return Number(sessionStorage.getItem('noga_gate') || 0) > Date.now(); } catch (e) { return false; } });
+    const newQ = () => { const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4); return { a, b }; };
+    const [gq, setGq] = R.useState(newQ);
+    const [gAns, setGAns] = R.useState('');
+    const [gErr, setGErr] = R.useState(false);
+    const gateTry = () => {
+      if (Number(gAns) === gq.a * gq.b) { try { sessionStorage.setItem('noga_gate', String(Date.now() + 15 * 60 * 1000)); } catch (e) {} setParentOk(true); setGAns(''); setGErr(false); return; }
+      setGErr(true); setGAns(''); setGq(newQ());
+    };
     const go = (target) => { setMenu(false); unlockAudio(); setName(target); setStarted(true); history.pushState({ b: target }, '', '#' + target); };
     const GUIDE = [
       ['📱', 'מחזיקים את הטלפון לרוחב. בפעם הראשונה לוחצים "מתחילים" ונוגה מספרת את הסיפור.'],
@@ -194,7 +204,7 @@
       ['🔊', 'נוגה אומרת הכול בקול, לא צריך לדעת לקרוא. כשלא בטוחים לוחצים על הרמקול. אחרי טעויות נוגה עוזרת לבד.'],
       ['⭐', 'כל משחק מסתיים ב-1 עד 5 כוכבים, ותמיד אפשר לשחק שוב ולשפר. כוכב חדש נפתח אחרי 5 מתוך 7 משחקים.'],
       ['⏱️', '10–20 דקות ביום מספיקות. עדיף קצת כל יום מאשר הרבה בבת אחת.'],
-      ['👨‍👩‍👧', 'אזור הורים (כפתור ☰ בפינה): דוח קצר על ההתקדמות, שאלון מחדש, צלילים, פתיחת כל הרמות.'],
+      ['👨‍👩‍👧', 'אזור הורים (כפתור ☰ בפינה, נכנסים עם תרגיל כפל קטן כדי שהילדים לא ייכנסו בטעות): דוח קצר על ההתקדמות, שאלון מחדש, צלילים, פתיחת כל הרמות.'],
       ['🔒', 'הכול נשמר במכשיר הזה בלבד. האפליקציה לא אוספת ולא שולחת שום מידע.'],
     ];
     const guideOv = guide ? h('div', { className: 'ov', onClick: () => setGuide(false) },
@@ -202,6 +212,14 @@
         h('div', { className: 'guide-head' }, h('span', null, 'איך משתמשים? מדריך קצר להורים'), h('button', { className: 'ov-x', 'aria-label': 'סגירה', onClick: () => setGuide(false) }, '✕')),
         h('ol', { className: 'guide-list' }, GUIDE.map((g, i) => h('li', { key: i }, h('span', { className: 'guide-ic' }, g[0]), h('span', null, g[1])))),
         h('button', { className: 'guide-ok', onClick: () => setGuide(false) }, 'הבנתי'))) : null;
+    const gateOv = started && name === 'Parent' && !parentOk ? h('div', { className: 'ov' },
+      h('form', { className: 'guide gate', onSubmit: (e) => { e.preventDefault(); gateTry(); } },
+        h('div', { className: 'guide-head' }, h('span', null, '🔒 לְהוֹרִים בִּלְבַד'), h('button', { type: 'button', className: 'ov-x', 'aria-label': 'ביטול', onClick: () => go(CFG.home) }, '✕')),
+        h('p', { className: 'gate-q' }, 'כדי להיכנס לאזור ההורים, כתבו את התוצאה:'),
+        h('div', { className: 'gate-ex', dir: 'ltr' }, gq.a + ' × ' + gq.b + ' = ',
+          h('input', { className: 'gate-in', type: 'text', inputMode: 'numeric', pattern: '[0-9]*', autoComplete: 'off', maxLength: 3, value: gAns, autoFocus: true, 'aria-label': 'התוצאה', onChange: (e) => setGAns(e.target.value.replace(/[^0-9]/g, '')) })),
+        gErr ? h('p', { className: 'gate-err' }, 'לא נכון, הנה תרגיל אחר.') : null,
+        h('div', { className: 'gate-btns' }, h('button', { type: 'submit', className: 'guide-ok' }, 'כניסה'), h('button', { type: 'button', className: 'gate-cancel', onClick: () => go(CFG.home) }, 'חזרה למשחק')))) : null;
     const menuOv = started ? h(R.Fragment, null,
       h('button', { className: 'fab', 'aria-label': 'תפריט', onClick: () => setMenu(m => !m) }, menu ? '✕' : '☰'),
       menu ? h('div', { className: 'menu' },
@@ -221,7 +239,7 @@
     R.useEffect(() => { const f = (e) => setName((e.state && e.state.b) || (location.hash || '').slice(1) || CFG.home); window.addEventListener('popstate', f); return () => window.removeEventListener('popstate', f); }, []);
     R.useEffect(() => { let alive = true; setComp(null); setErr(''); getBoard(name).then(C => { if (alive) setComp(() => C); }).catch(e => { if (alive) setErr(String(e.message || e)); }); return () => { alive = false; }; }, [name]);
     const stage = h('div', { id: 'stage', style: { width: W, height: H, transform: 'scale(' + scale + ')', transformOrigin: 'top left', position: 'absolute', left: Math.max(0, (window.innerWidth - W * scale) / 2), top: Math.max(0, (window.innerHeight - H * scale) / 2), overflow: 'hidden', background: '#0E0A2E' } },
-      started && Comp ? h(Comp, { key: name, nav, store }) : null,
+      started && Comp && !(name === 'Parent' && !parentOk) ? h(Comp, { key: name, nav, store }) : null,
       started && !Comp && !err ? h('div', { className: 'loading' }, h('div', { className: 'spinner' }), 'טוֹעֲנִים…') : null,
       err ? h('div', { className: 'loading' }, 'אופס: ' + err) : null,
       !started ? h('div', { className: 'start' },
@@ -242,7 +260,7 @@
           !S.intake ? h('button', { className: 'pbtn pbtn-gold', onClick: () => go('Intake') }, '📝 שאלון לבחירת רמה (2 דק׳)') : null,
           h('button', { className: 'pbtn', onClick: () => setGuide(true) }, '❓ איך משתמשים'))) : null,
       menuOv, guideOv);
-    return h(R.Fragment, null, stage, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
+    return h(R.Fragment, null, stage, gateOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
   }
   RD.createRoot(document.getElementById('root')).render(h(App));
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

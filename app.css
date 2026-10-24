@@ -50,3 +50,11 @@ button, a { touch-action: manipulation; }
 @media (max-height: 420px) { .guide-list li { font-size: 14px; } .guide { padding: 12px 16px; } .guide-head { font-size: 19px; } }
 .menu-fb { background: #FFC83D !important; color: #17123D !important; }
 .menu-ver { color: #8F88C2; font-size: 13px; text-align: center; padding-top: 2px; }
+
+.gate { max-width: 460px; text-align: center; }
+.gate-q { font-size: 18px; margin: 4px 0 10px; color: #C9C3F2; }
+.gate-ex { font: 700 34px Rubik, sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.gate-in { width: 92px; font: 700 32px Rubik, sans-serif; text-align: center; border-radius: 14px; border: 2px solid #C9C3F2; background: #0E0A2E; color: #fff; padding: 4px 6px; }
+.gate-err { color: #FFB4A3; font-size: 16px; margin: 8px 0 0; }
+.gate-btns { display: flex; gap: 12px; justify-content: center; align-items: center; }
+.gate-cancel { margin-top: 14px; background: transparent; color: #C9C3F2; border: 2px solid rgba(201,195,242,0.4); border-radius: 999px; padding: 8px 22px; font: 600 16px Rubik, sans-serif; cursor: pointer; }

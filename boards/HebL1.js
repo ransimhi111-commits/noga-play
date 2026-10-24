@@ -55,6 +55,8 @@ function clipUrl(id) {
 }
 const TILE_COLORS = ['#FF7A59', '#FFC83D', '#34D1BF', '#B48CFF', '#5AB0FF', '#FF9BD2'];
 
+// English inside Hebrew text: isolate each Latin run so punctuation stays on its own side (⁦ … ⁩)
+function iso(t) { return String(t == null ? '' : t).replace(/[A-Za-z](?:[A-Za-z0-9' ,.!?\-]*[A-Za-z0-9!?.])?/g, m => '\u2066' + m + '\u2069'); }
 function dirOf(t, ltr) { return (ltr || /^[\d\s+\-×=?,.➜]+$/.test(String(t || ''))) && String(t || '') !== '' ? 'ltr' : 'rtl'; }
 function fontFor(t, base) {
   const n = String(t || '').replace(/[֑-ׇ]/g, '').length;
@@ -232,7 +234,7 @@ class Component extends DCLogic {
       if (v.paused && !au.paused && !au.ended) { const q = v.play(); if (q && q.catch) q.catch(() => {}); }
     } catch (e) {}
   }
-  textOf(ids) { return (ids || []).filter(i => CLIPS[i]).map(i => CLIPS[i][0]).join(' '); }
+  textOf(ids) { return iso((ids || []).filter(i => CLIPS[i]).map(i => CLIPS[i][0]).join(' ')); }
   say(ids, img, after) {
     ids = (ids || []).filter(Boolean);
     this.lastIds = ids;
@@ -320,6 +322,7 @@ class Component extends DCLogic {
     this.hold(); this.say(G.type === 'match' && LV.common.match_tip ? (G.intro || []).concat(LV.common.match_tip) : G.intro, 'pointing', () => this.prompt());
   }
   // children tap everything before the instruction ends (Khan Kids finding): hold input while Noga gives the instruction, max 6s
+  blockedTap() { const g = this.m.g; if (!g || !g.holding) return; g.nudge = Date.now(); this.up(); clearTimeout(this.tNudge); this.tNudge = setTimeout(() => { const g2 = this.m.g; if (g2) { g2.nudge = 0; this.up(); } }, 520); }
   hold() { const g = this.m.g; if (!g) return; g.locked = true; g.holding = true; this.up(); clearTimeout(this.tHold); this.tHold = setTimeout(() => this.release(), 6000); }
   release() { const g = this.m.g; if (!g || !g.holding) return; clearTimeout(this.tHold); g.holding = false; g.locked = false; g.yourTurn = true; this.up(); clearTimeout(this.tTurn); this.tTurn = setTimeout(() => { const g2 = this.m.g; if (g2) { g2.yourTurn = false; this.up(); } }, 1400); this.armIdle(); }
   armIdle() {
@@ -660,11 +663,11 @@ class Component extends DCLogic {
       title: LV.title, levelLabel: 'רָמָה ' + LV.n + ' · ' + LV.subjName, mapHref: LV.mapHref, nextHref: LV.nextHref, hasNext: !!LV.nextHref && (!this.store || this.store.isOpen(String(LV.nextHref).replace('.dc.html', ''))),
       nextLabel: LV.nextLabel,
       isHub: S.screen === 'hub', isLesson: S.screen === 'lesson', isGame: S.screen === 'game', isVocab: S.screen === 'vocab',
-      vocabTitle: S.screen === 'vocab' ? (LV.games[S.gi].icon + ' ' + LV.games[S.gi].title) : '',
+      vocabTitle: S.screen === 'vocab' ? (LV.games[S.gi].icon + ' ' + iso(LV.games[S.gi].title)) : '',
       vocabItems: S.screen === 'vocab' ? LV.games[S.gi].vocab.map((w, k) => ({ pic: w.pic || '', t: w.t || '', he: w.he || '', tap: () => { clearTimeout(this.tv); this.m.vocabSel = k; this.up(); this.say(w.say, 'pointing'); },
         style: 'width: 190px; height: 190px; border-radius: 26px; border: 4px solid ' + (S.vocabSel === k ? '#FFC83D' : 'rgba(201,195,242,0.35)') + '; background: ' + (S.vocabSel === k ? 'rgba(255,200,61,0.18)' : 'rgba(36,28,92,0.85)') + '; color: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transform: scale(' + (S.vocabSel === k ? 1.08 : 1) + '); transition: transform .2s' })) : [],
       startGame: () => { clearTimeout(this.tv); this.stopAudio(); this.openGame(S.gi, true); },
-      holding: !!(g && g.holding), yourTurn: !!(g && g.yourTurn && !g.holding), nogaImg, vidKey: LV.key, nogaVidStyle: 'position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; transition: opacity .18s; opacity: ' + (hasVid && S.speaking ? 1 : 0), nogaGlow: S.talking ? '0 0 26px rgba(52,209,191,0.9)' : '0 0 14px rgba(52,209,191,0.35)',
+      holding: !!(g && g.holding), blockedTap: () => this.blockedTap(), holdCls: g && g.nudge ? 'shake' : 'tapme', yourTurn: !!(g && g.yourTurn && !g.holding), nogaImg, vidKey: LV.key, nogaVidStyle: 'position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; transition: opacity .18s; opacity: ' + (hasVid && S.speaking ? 1 : 0), nogaGlow: S.talking ? '0 0 26px rgba(52,209,191,0.9)' : '0 0 14px rgba(52,209,191,0.35)',
       nogaSays: S.says, sayAgain: () => this.say(this.lastIds || [], null), needTap: S.needTap,
       replay: () => { if (S.screen === 'game') this.prompt(); else if (S.screen === 'lesson') this.say(LV.lesson.intro); else this.say(S.gi < 0 && this.allDone() ? LV.common.done : LV.intro); },
       planetImg: LV.planetImg, alienImg: LV.alienImg, alienDizzy: LV.alienDizzy, shipImg: LV.shipImg,
@@ -688,9 +691,12 @@ class Component extends DCLogic {
       sparks: this.m.saved ? Array.from({ length: 14 }, (_, i) => ({ style: 'left: ' + ((i * 83) % 1100 + 20) + 'px; top: ' + ((i * 157) % 700 + 40) + 'px; animation-delay: ' + ((i % 7) * 0.2) + 's' })) : [],
       lessonCardStyle: 'background: ' + (S.lessonDone ? 'rgba(52,209,191,0.25)' : 'rgba(36,28,92,0.88)'),
     });
-    v.hubGames = LV.games.map((G2, i) => ({ gid: 'g' + i, icon: G2.icon, title: G2.title, desc: G2.desc, open: () => this.openGame(i),
-      badge: S.done[i] ? '\u2066' + '★'.repeat(S.done[i]) + '☆'.repeat(5 - S.done[i]) + '\u2069' : 'לְשַׂחֵק', badgeStyle: 'align-self: center; border-radius: 999px; padding: 4px 14px; font-size: 16px; font-weight: 700; ' + (S.done[i] ? 'background: #34D1BF; color: #17123D' : 'background: #FFC83D; color: #17123D'),
-      cardStyle: 'border: 3px solid ' + (S.done[i] ? '#34D1BF' : TILE_COLORS[i % TILE_COLORS.length]) + '; box-shadow: 0 0 18px ' + (S.done[i] ? 'rgba(52,209,191,0.45)' : 'rgba(0,0,0,0.25)') }));
+    const anyDone = LV.games.some((_, i) => S.done[i]);
+    const nextI = (!anyDone && !S.lessonDone) ? -2 : LV.games.findIndex((_, i) => !S.done[i]);
+    v.lessonCardStyle = 'background: ' + (S.lessonDone ? 'rgba(52,209,191,0.25)' : 'rgba(36,28,92,0.88)') + (nextI === -2 ? '; animation: glowPulse 1.6s ease-in-out infinite' : '');
+    v.hubGames = LV.games.map((G2, i) => ({ gid: 'g' + i, icon: G2.icon, title: iso(G2.title), desc: G2.desc, open: () => this.openGame(i),
+      badge: S.done[i] ? '\u2066' + '★'.repeat(S.done[i]) + '☆'.repeat(5 - S.done[i]) + '\u2069' : (i === nextI ? 'לְשַׂחֵק ⭐' : 'לְשַׂחֵק'), badgeStyle: 'align-self: center; border-radius: 999px; padding: 4px 14px; font-size: 16px; font-weight: 700; ' + (S.done[i] ? 'background: #34D1BF; color: #17123D' : 'background: #FFC83D; color: #17123D'),
+      cardStyle: 'border: 3px solid ' + (S.done[i] ? '#34D1BF' : TILE_COLORS[i % TILE_COLORS.length]) + '; box-shadow: 0 0 18px ' + (S.done[i] ? 'rgba(52,209,191,0.45)' : 'rgba(0,0,0,0.25)') + (i === nextI ? '; animation: glowPulse 1.6s ease-in-out infinite' : '') }));
     // ---- lesson ----
     const L = LV.lesson;
     if (S.screen === 'lesson') {
@@ -715,7 +721,7 @@ class Component extends DCLogic {
     // ---- game ----
     if (g && S.screen === 'game') {
       const T = g.type, r = this.curRound() || {};
-      v.gameTitle = G.title; v.gameIcon = G.icon;
+      v.gameTitle = iso(G.title); v.gameIcon = G.icon;
       v.progress = starsOf(g.score, g.n);
       ['choose', 'shoot', 'catch', 'match', 'keypad', 'path', 'puzzle', 'memory', 'sort', 'order', 'bowling'].forEach(k => { v['is_' + k] = T === k; });
       v.shakeSlots = S.shake === 'slots' ? 'shake' : '';
