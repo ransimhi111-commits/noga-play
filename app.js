@@ -166,6 +166,13 @@
     try { if (el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {}); } catch (e) {}
     try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
   }
+  function sendFeedback() {
+    const fb = CFG.feedback || {}; const ua = navigator.userAgent.replace(/\).*$/, ')').slice(0, 80);
+    const where = (location.hash || '').slice(1) || 'התחלה';
+    const body = 'משוב על "להציל את כוכב נוגה"\nגרסה: ' + (CFG.v || '') + ' · מסך: ' + where + '\nמכשיר: ' + ua + '\n\nמה קרה / מה לא עבד:\n\nרעיון לשיפור:\n\nמה הילד/ה אהב/ה:\n';
+    const url = fb.wa ? 'https://wa.me/' + fb.wa + '?text=' + encodeURIComponent(body) : 'mailto:' + (fb.mail || '') + '?subject=' + encodeURIComponent('משוב על כוכב נוגה') + '&body=' + encodeURIComponent(body);
+    try { window.open(url, '_blank'); } catch (e) { location.href = url; }
+  }
   const STARS = Array.from({ length: 46 }, (_, i) => [(i * 37) % 100, (i * 53 + 11) % 100, 2 + (i % 3), (i % 7) * 0.35]);
   function App() {
     const scale = useFit();
@@ -201,7 +208,9 @@
         h('button', { onClick: () => go(CFG.home) }, '🏠 מסך הבית'),
         h('button', { onClick: () => { setMenu(false); setStarted(false); history.pushState({ b: 'Start' }, '', '#'); } }, '▶ מסך הפתיחה'),
         h('button', { onClick: () => go('Parent') }, '👨‍👩‍👧 אזור הורים'),
-        h('button', { onClick: () => { setMenu(false); setGuide(true); } }, '❓ איך משתמשים')) : null) : null;
+        h('button', { onClick: () => { setMenu(false); setGuide(true); } }, '❓ איך משתמשים'),
+        h('button', { className: 'menu-fb', onClick: () => { setMenu(false); sendFeedback(); } }, '💬 שלחו לרן משוב'),
+        h('div', { className: 'menu-ver' }, 'גרסה ' + (CFG.v || ''))) : null) : null;
     R.useEffect(() => { const f = () => setPortrait(window.innerHeight > window.innerWidth && window.innerWidth < 900); f(); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
     const nav = R.useCallback((target, replace) => {
       if (!store.isOpen(target)) return;
