@@ -31,11 +31,13 @@ class Component extends DCLogic {
   renderVals() {
     const go = () => { this.setState({ heard: true }); this.playClip('home-audio', ENV.home); };
     const st = this.props && this.props.store, PL = ['נפטון', 'אורנוס', 'שבתאי', 'צדק', 'מאדים', 'כדור הארץ', 'כוכב נוגה'];
-    const cur = (pre) => { let n = 1; if (st) for (let i = 2; i <= 7; i++) if (st.isOpen(pre + 'L' + i)) n = i; return 'רמה ' + n + ' · ' + PL[n - 1]; };
+    const cur = (pre) => { let n = 1; if (st) { for (let i = 2; i <= 7; i++) if (st.isOpen(pre + 'L' + i)) n = i; for (let i = 1; i <= 7; i++) if (st.isOpen(pre + 'L' + i) && !st.isComplete(pre + 'L' + i)) { n = i; break; } } return 'רמה ' + n + ' · ' + PL[n - 1]; };   // same rule as the map's rocket
     let parts = 0; const dots = []; ['Heb', 'Math', 'Eng'].forEach(p => { for (let i = 1; i <= 7; i++) { const c = st ? st.isComplete(p + 'L' + i) : false; if (c) parts++; dots.push({ s: 'width: 12px; height: 12px; border-radius: 50%; background: ' + (c ? '#FFC83D' : 'rgba(255,255,255,0.18)') + '; box-shadow: ' + (c ? '0 0 8px #FFC83D' : 'none') }); } });
     const stk = st ? (st.get('stickers') || {}) : {};
+    let stars = 0; if (st) ['Heb', 'Math', 'Eng'].forEach(p => { for (let i = 1; i <= 7; i++) { const d = st.getDone(p + 'L' + i); for (const k in d) if (k !== '_total') stars += Number(d[k]) || 0; } });
+    const pilot = st ? st.get('pilot') : '';
     return { nogaGlow: this.glow(), nogaImg: this.frame(), speak: go, playHint: (this.state.heard || this.state.playing) ? [] : [{ go: go }], hebLabel: cur('Heb'), mathLabel: cur('Math'), engLabel: cur('Eng'),
-             shipImg: SHIP, shipParts: parts + '/21 חֲלָקִים', shipDots: dots, stickerCount: String(Object.keys(stk).length) };
+             shipImg: SHIP, shipParts: parts + '/21 חֲלָקִים', shipDots: dots, stickerCount: String(Object.keys(stk).length), pilotLabel: pilot ? '🧑‍🚀 ' + pilot : '🧑‍🚀 טַיָּסִים', starCount: String(stars) };
   }
 }
 

@@ -5,34 +5,62 @@
   'use strict';
   const R = window.React, RD = window.ReactDOM, h = R.createElement;
   const W = 1180, H = 820;
+  const RAIL = 72;   // px kept free at the left edge for the ☰ and ⏸ buttons (phones have this space anyway)
   const CFG = window.NOGA_CONFIG || { open: {}, start: 'Story', home: 'Main' };
 
   // ------------------------------------------------------------------ progress store
   const KEY = 'noga.v1';
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
-  function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+  // two tabs (or the home-screen app next to a browser tab) each hold a copy: merge with what is stored
+  // instead of overwriting it, so stars earned in one copy are never erased by the other
+  function merge(into, from) {
+    if (!from) return into;
+    const fr = from.resetAt || 0, ir = into.resetAt || 0;
+    if (fr > ir) { ['done', 'opened', 'help', 'stickers', 'intake', 'time', 'seenStory', 'resetAt'].forEach(f => { into[f] = from[f]; }); into.done = into.done || {}; return into; }   // the other copy was reset later
+    if (ir > fr) return into;
+    for (const k in from.done || {}) { const a = into.done[k] || (into.done[k] = {}), b = from.done[k]; for (const g in b) a[g] = g === '_total' ? b[g] : Math.max(Number(a[g]) || 0, Number(b[g]) || 0); }
+    ['opened', 'stickers', 'help'].forEach(f => { if (from[f]) into[f] = Object.assign({}, from[f], into[f] || {}); });
+    return into;
+  }
+  function save(s) { try { merge(s, JSON.parse(localStorage.getItem(KEY))); localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
   const S = Object.assign({ done: {}, seenStory: false }, load());
+  window.addEventListener('storage', (e) => { if (e.key === KEY) { try { merge(S, JSON.parse(e.newValue)); } catch (err) {} } });
+  const PASS_STARS = 3;   // a game counts toward opening the next planet from 3 stars (random tapping ends with 1–2)
   const store = {
     getDone(k) { return S.done[k] || {}; },
     setDone(k, d, total) { S.done[k] = Object.assign({}, d, { _total: total }); save(S); },
-    count(k) { const d = S.done[k]; return d ? Object.keys(d).filter(x => x !== '_total').length : 0; },
+    count(k) { const d = S.done[k]; return d ? Object.keys(d).filter(x => x !== '_total' && Number(d[x]) >= PASS_STARS).length : 0; },
+    played(k) { const d = S.done[k]; return d ? Object.keys(d).filter(x => x !== '_total').length : 0; },
     isComplete(k) { const d = S.done[k]; if (!d) return false; return store.count(k) >= Math.min(CFG.pass || 5, d._total || 7); },
     isOpen(k) {
       const m = /^(Heb|Math|Eng)L(\d)$/.exec(k); if (!m) return true;
       const n = Number(m[2]), max = CFG.open[m[1]] || 0;
       if (S.openAll) return true;
       if (n > max) return false;
+      if (S.opened && S.opened[k]) return true;   // a planet once opened stays open
       const st = (S.intake && S.intake.start && S.intake.start[m[1]]) || 1;
-      return n <= st || store.isComplete(m[1] + 'L' + (n - 1));
+      const ok = n <= st || store.isComplete(m[1] + 'L' + (n - 1));
+      if (ok && n > 1) { S.opened = Object.assign({}, S.opened, { [k]: true }); save(S); }
+      return ok;
     },
     config() { return CFG; },
     get(k) { return S[k]; }, set(k, v) { S[k] = v; save(S); },
-    reset() { S.done = {}; S.seenStory = false; S.time = 0; S.intake = null; save(S); },
+    // every mistake of the last round of each game, the practice question included, for the parents' report
+    noteHelp(k, gi, n) { S.help = Object.assign({}, S.help); S.help[k] = Object.assign({}, S.help[k], { [gi]: n }); save(S); },
+    reset() { S.done = {}; S.seenStory = false; S.time = 0; S.intake = null; S.opened = {}; S.help = {}; S.stickers = {}; S.resetAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} },
     addTime(sec) { S.time = (S.time || 0) + sec; S.lastPlay = Date.now(); save(S); },
   };
-  // play-time: 1 tick per 15s while the page is visible and not on parent/intake screens
-  let curScreen = '';
-  setInterval(() => { if (document.visibilityState === 'visible' && !/^(Parent|Intake|Start)$/.test(curScreen)) store.addTime(15); }, 15000);
+  // planets opened under the old rule (any 5 games) stay open for children who already reached them
+  if (!S.openedV) {
+    S.opened = Object.assign({}, S.opened);
+    ['Heb', 'Math', 'Eng'].forEach(p => { for (let n = 2; n <= 7; n++) { const d = S.done[p + 'L' + (n - 1)]; if (d && Object.keys(d).filter(x => x !== '_total').length >= Math.min(CFG.pass || 5, d._total || 7)) S.opened[p + 'L' + n] = true; } });
+    S.openedV = 1; save(S);
+  }
+  // play-time: 1 tick per 15s while the page is visible and a game screen is really on (not the start screen,
+  // the parents' area, the questionnaire or a pause)
+  let curScreen = 'Start';
+  let sessionPlay = 0;
+  setInterval(() => { if (document.visibilityState === 'visible' && !/^(Parent|Intake|Start|Pause)$/.test(curScreen)) { store.addTime(15); sessionPlay += 15; } }, 15000);
 
   // ------------------------------------------------------------------ template compiler
   const EVT = { onclick: 'onClick', onpointerdown: 'onPointerDown', onpointermove: 'onPointerMove', onpointerup: 'onPointerUp', onpointerleave: 'onPointerLeave', onpointercancel: 'onPointerCancel', oninput: 'onInput', onchange: 'onChange', onkeydown: 'onKeyDown' };
@@ -151,7 +179,7 @@
   function useFit() {
     const [s, setS] = R.useState(1);
     R.useEffect(() => {
-      const f = () => { const vw = window.innerWidth, vh = window.innerHeight; setS(Math.min(vw / W, vh / H)); };
+      const f = () => { const vw = window.innerWidth, vh = window.innerHeight; setS(Math.min((vw - RAIL) / W, vh / H)); };
       f(); window.addEventListener('resize', f); window.addEventListener('orientationchange', f);
       return () => { window.removeEventListener('resize', f); window.removeEventListener('orientationchange', f); };
     }, []);
@@ -176,10 +204,15 @@
   const STARS = Array.from({ length: 46 }, (_, i) => [(i * 37) % 100, (i * 53 + 11) % 100, 2 + (i % 3), (i % 7) * 0.35]);
   function App() {
     const scale = useFit();
-    const initial = (location.hash || '').slice(1);
+    const hashName = (location.hash || '').slice(1);
+    const initial = hashName && store.isOpen(hashName) ? hashName : '';
     const [started, setStarted] = R.useState(false);
     const [name, setName] = R.useState(initial || (S.seenStory ? CFG.home : CFG.start));
-    curScreen = name;
+    const [inGame, setInGame] = R.useState(false);      // a level is showing a game or the lesson (from the board)
+    const [paused, setPaused] = R.useState(false);
+    const [breakAsk, setBreakAsk] = R.useState(false);
+    const inGameRef = R.useRef(false); inGameRef.current = inGame && started;
+    curScreen = !started ? 'Start' : paused ? 'Pause' : name;
     const [Comp, setComp] = R.useState(null);
     const [err, setErr] = R.useState('');
     const [portrait, setPortrait] = R.useState(false);
@@ -196,15 +229,29 @@
       if (Number(gAns) === gq.a * gq.b) { try { sessionStorage.setItem('noga_gate', String(Date.now() + 15 * 60 * 1000)); } catch (e) {} setParentOk(true); setGAns(''); setGErr(false); return; }
       setGErr(true); setGAns(''); setGq(newQ());
     };
-    const go = (target) => { setMenu(false); unlockAudio(); setName(target); setStarted(true); history.pushState({ b: target }, '', '#' + target); };
+    const go = (target) => { setMenu(false); setPaused(false); setBreakAsk(false); unlockAudio(); setName(target); setStarted(true); history.pushState({ b: target }, '', '#' + target); };
+    R.useEffect(() => {
+      const f = (e) => { const g = e.detail === 'game' || e.detail === 'lesson'; setInGame(g); if (g && !(history.state && history.state.game)) history.pushState({ b: (location.hash || '').slice(1), game: 1 }, '', location.hash); };
+      window.addEventListener('noga:screen', f); return () => window.removeEventListener('noga:screen', f);
+    }, []);
+    R.useEffect(() => { if (!/^(Heb|Math|Eng)L\d$/.test(name)) setInGame(false); setPaused(false); }, [name]);
+    const pause = () => { setMenu(false); setPaused(true); window.dispatchEvent(new CustomEvent('noga:pause')); };
+    const resume = () => { setPaused(false); window.dispatchEvent(new CustomEvent('noga:resume')); };
+    const toHub = () => { setPaused(false); window.dispatchEvent(new CustomEvent('noga:hub')); };
+    // a break after the daily minutes the parents chose (15 if they skipped the questionnaire), once per session
+    R.useEffect(() => {
+      const t = setInterval(() => { const goal = ((S.intake && S.intake.minutes) || 15) * 60; if (sessionPlay >= goal && !window.__nogaBreakAsked) { window.__nogaBreakAsked = true; setBreakAsk(true); window.dispatchEvent(new CustomEvent('noga:pause')); } }, 5000);
+      return () => clearInterval(t);
+    }, []);
     const GUIDE = [
       ['📱', 'מחזיקים את הטלפון לרוחב. בפעם הראשונה לוחצים "מתחילים" ונוגה מספרת את הסיפור.'],
       ['📝', 'שאלון של 2 דקות להורים קובע מאיפה הילד/ה מתחיל/ה בכל מקצוע. אפשר לדלג ולהתחיל מרמה 1.'],
       ['🪐', 'הילד/ה בוחר/ת תחום (עברית, חשבון, אנגלית) ואז כוכב. בכל כוכב: קודם "שיעור עם נוגה", אחר כך 7 משחקים.'],
       ['🔊', 'נוגה אומרת הכול בקול, לא צריך לדעת לקרוא. כשלא בטוחים לוחצים על הרמקול. אחרי טעויות נוגה עוזרת לבד.'],
-      ['⭐', 'כל משחק מסתיים ב-1 עד 5 כוכבים, ותמיד אפשר לשחק שוב ולשפר. כוכב חדש נפתח אחרי 5 מתוך 7 משחקים.'],
+      ['⭐', 'כל משחק מסתיים ב-1 עד 5 כוכבים, ותמיד אפשר לשחק שוב ולשפר. כוכב חדש נפתח אחרי 5 משחקים עם 3 כוכבים ומעלה, ונוגה מזמינה לטוס אליו.'],
       ['⏱️', '10–20 דקות ביום מספיקות. עדיף קצת כל יום מאשר הרבה בבת אחת.'],
-      ['👨‍👩‍👧', 'אזור הורים (כפתור ☰ בפינה, נכנסים עם תרגיל כפל קטן כדי שהילדים לא ייכנסו בטעות): דוח קצר על ההתקדמות, שאלון מחדש, צלילים, פתיחת כל הרמות.'],
+      ['⏸', 'באמצע משחק: כפתור ⏸ בצד שמאל עוצר הכול — אפשר להמשיך, לבחור משחק אחר או לחזור הביתה.'],
+      ['👨‍👩‍👧', 'אזור הורים (כפתור ☰ בצד שמאל למטה, נכנסים עם תרגיל כפל קטן כדי שהילדים לא ייכנסו בטעות): דוח קצר על ההתקדמות, שאלון מחדש, צלילים, פתיחת כל הרמות.'],
       ['🔒', 'הכול נשמר במכשיר הזה בלבד. האפליקציה לא אוספת ולא שולחת שום מידע.'],
     ];
     const guideOv = guide ? h('div', { className: 'ov', onClick: () => setGuide(false) },
@@ -236,12 +283,21 @@
       if (replace) history.replaceState({ b: target }, '', '#' + target); else history.pushState({ b: target }, '', '#' + target);
       setName(target);
     }, []);
-    R.useEffect(() => { const f = (e) => setName((e.state && e.state.b) || (location.hash || '').slice(1) || CFG.home); window.addEventListener('popstate', f); return () => window.removeEventListener('popstate', f); }, []);
-    R.useEffect(() => { let alive = true; setComp(null); setErr(''); getBoard(name).then(C => { if (alive) setComp(() => C); }).catch(e => { if (alive) setErr(String(e.message || e)); }); return () => { alive = false; }; }, [name]);
-    const stage = h('div', { id: 'stage', style: { width: W, height: H, transform: 'scale(' + scale + ')', transformOrigin: 'top left', position: 'absolute', left: Math.max(0, (window.innerWidth - W * scale) / 2), top: Math.max(0, (window.innerHeight - H * scale) / 2), overflow: 'hidden', background: '#0E0A2E' } },
+    R.useEffect(() => {
+      const f = (e) => {
+        if (inGameRef.current && !(e.state && e.state.game)) { history.pushState({ b: (location.hash || '').slice(1), game: 1 }, '', location.hash); pause(); return; }
+        const t = (e.state && e.state.b) || (location.hash || '').slice(1) || CFG.home;
+        if (!store.isOpen(t)) { history.replaceState({ b: CFG.home }, '', '#' + CFG.home); setName(CFG.home); return; }
+        setName(t);
+      };
+      window.addEventListener('popstate', f); return () => window.removeEventListener('popstate', f);
+    }, []);
+    const [tries, setTries] = R.useState(0);
+    R.useEffect(() => { let alive = true; setComp(null); setErr(''); getBoard(name).then(C => { if (alive) setComp(() => C); }).catch(e => { if (alive) { console.warn(e); setErr(navigator.onLine === false ? 'offline' : 'load'); } }); return () => { alive = false; }; }, [name, tries]);
+    const stage = h('div', { id: 'stage', style: { width: W, height: H, transform: 'scale(' + scale + ')', transformOrigin: 'top left', position: 'absolute', left: RAIL + Math.max(0, (window.innerWidth - RAIL - W * scale) / 2), top: Math.max(0, (window.innerHeight - H * scale) / 2), overflow: 'hidden', background: '#0E0A2E' } },
       started && Comp && !(name === 'Parent' && !parentOk) ? h(Comp, { key: name, nav, store }) : null,
       started && !Comp && !err ? h('div', { className: 'loading' }, h('div', { className: 'spinner' }), 'טוֹעֲנִים…') : null,
-      err ? h('div', { className: 'loading' }, 'אופס: ' + err) : null,
+      null,
       !started ? h('div', { className: 'start' },
         STARS.map((st, i) => h('span', { key: 'st' + i, className: 'star', style: { left: st[0] + '%', top: st[1] + '%', width: st[2] + 'px', height: st[2] + 'px', animationDelay: st[3] + 's' } })),
         h('img', { src: 'assets/saturn.webp', alt: '', className: 'deco deco-planet', style: { left: '4%', top: '6%', width: '16vw', maxWidth: 200, animationDelay: '0s' } }),
@@ -259,8 +315,31 @@
           h('button', { className: 'pbtn', onClick: () => go('Parent') }, '👨‍👩‍👧 אזור הורים'),
           !S.intake ? h('button', { className: 'pbtn pbtn-gold', onClick: () => go('Intake') }, '📝 שאלון לבחירת רמה (2 דק׳)') : null,
           h('button', { className: 'pbtn', onClick: () => setGuide(true) }, '❓ איך משתמשים'))) : null,
-      menuOv, guideOv);
-    return h(R.Fragment, null, stage, gateOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
+      null);
+    const pauseOv = paused && !breakAsk ? h('div', { className: 'ov pause-ov' },
+      h('div', { className: 'pause' },
+        h('img', { src: 'assets/noga_friendly.webp', alt: 'נוגה', className: 'pause-noga' }),
+        h('div', { className: 'pause-title' }, 'הַפְסָקָה'),
+        h('button', { className: 'big-btn', onClick: resume }, '▶ מַמְשִׁיכִים לְשַׂחֵק'),
+        h('div', { className: 'pause-row' },
+          h('button', { className: 'big-btn big-btn-2', onClick: toHub }, '🪐 מִשְׂחָק אַחֵר'),
+          h('button', { className: 'big-btn big-btn-2', onClick: () => go(CFG.home) }, '🏠 הַבַּיְתָה')))) : null;
+    const breakOv = breakAsk ? h('div', { className: 'ov pause-ov' },
+      h('div', { className: 'pause' },
+        h('img', { src: 'assets/noga_clapping.webp', alt: 'נוגה', className: 'pause-noga' }),
+        h('div', { className: 'pause-title' }, 'כׇּל הַכָּבוֹד! זֶה זְמַן טוֹב לְהַפְסָקָה'),
+        h('div', { className: 'pause-sub' }, 'שִׂחַקְתֶּם הַיּוֹם ' + Math.round(sessionPlay / 60) + ' דַּקּוֹת. נוֹגָה תְּחַכֶּה לָכֶם מָחָר!'),
+        h('div', { className: 'pause-row' },
+          h('button', { className: 'big-btn', onClick: () => { setBreakAsk(false); setPaused(false); setStarted(false); history.pushState({ b: 'Start' }, '', '#'); } }, '🌙 סִיַּמְנוּ לְהַיּוֹם'),
+          h('button', { className: 'big-btn big-btn-2', onClick: () => { setBreakAsk(false); resume(); } }, 'עוֹד קְצָת')))) : null;
+    const errOv = err && started ? h('div', { className: 'ov pause-ov' }, h('div', { className: 'pause' },
+        h('div', { style: { fontSize: 64 } }, '🛰️'),
+        err === 'offline' ? 'אֵין חִבּוּר לָאִינְטֶרְנֶט, וְהַכּוֹכָב הַזֶּה עוֹד לֹא יָרַד לַמַּכְשִׁיר.' : 'הַכּוֹכָב לֹא נִטְעַן. נְנַסֶּה שׁוּב?',
+        h('div', { style: { display: 'flex', gap: 16 } },
+          h('button', { className: 'big-btn', onClick: () => { delete boards[name]; setTries(t => t + 1); } }, '↻ לְנַסּוֹת שׁוּב'),
+          h('button', { className: 'big-btn big-btn-2', onClick: () => go(CFG.home) }, '🏠 הַבַּיְתָה')))) : null;
+    const pauseBtn = started && inGame && !paused && !breakAsk ? h('button', { className: 'pause-fab', 'aria-label': 'הַפְסָקָה', onClick: pause }, '⏸') : null;
+    return h(R.Fragment, null, stage, pauseBtn, menuOv, guideOv, pauseOv, breakOv, errOv, gateOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
   }
   RD.createRoot(document.getElementById('root')).render(h(App));
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

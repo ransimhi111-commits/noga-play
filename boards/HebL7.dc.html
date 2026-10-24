@@ -115,7 +115,7 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
           <img src="{{alienImg}}" alt="החייזר ששובה את הכוכב" style="position: absolute; right: -40px; bottom: -6px; width: 110px; height: 110px; object-fit: contain" class="bob">
         </div>
         <sc-if value="{{hasNext}}" hint-placeholder-val="{{true}}">
-          <a href="{{nextHref}}" style="margin-bottom: 20px; background: #FFC83D; color: #17123D; border-radius: 999px; padding: 12px 26px; font-size: 22px; font-weight: 700; text-decoration: none; box-shadow: 0 6px 0 #D49D10">{{nextLabel}}</a>
+          <a href="{{nextHref}}" style="animation: glowPulse 1.6s ease-in-out infinite; margin-bottom: 20px; background: #FFC83D; color: #17123D; border-radius: 999px; padding: 12px 26px; font-size: 22px; font-weight: 700; text-decoration: none; box-shadow: 0 6px 0 #D49D10">{{nextLabel}}</a>
         </sc-if>
       </div>
     </div>
@@ -716,7 +716,11 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
         <div style="position: absolute; left: 0; right: 0; top: 60px; text-align: center; font-size: 64px; font-weight: 700; color: #FFC83D; text-shadow: 0 4px 24px rgba(0,0,0,0.6)" class="pop">הִצַּלְנוּ אֶת הַכּוֹכָב! 🎉</div>
         <div style="position: absolute; left: 0; right: 0; top: 150px; text-align: center; font-size: 30px; color: #FFFFFF">הַחַיְזָר בָּרַח!</div>
         <div style="position: absolute; left: 120px; right: 120px; bottom: 130px; text-align: center; font-size: 26px; color: #C9C3F2; line-height: 1.4">{{storyText}}</div>
-        <button onClick="{{savedDone}}" style="position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); background: #FFC83D; color: #17123D; border: 0; border-radius: 999px; padding: 18px 48px; font: 700 28px Rubik, Fredoka, sans-serif; box-shadow: 0 7px 0 #D49D10; cursor: pointer">מַמְשִׁיכִים ←</button>
+        <sc-if value="{{noInvite}}" hint-placeholder-val="{{true}}"><button onClick="{{savedDone}}" style="position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); background: #FFC83D; color: #17123D; border: 0; border-radius: 999px; padding: 18px 48px; font: 700 28px Rubik, Fredoka, sans-serif; box-shadow: 0 7px 0 #D49D10; cursor: pointer">מַמְשִׁיכִים ←</button></sc-if>
+        <sc-if value="{{invite}}" hint-placeholder-val="{{false}}"><div style="position: absolute; left: 0; right: 0; bottom: 34px; display: flex; justify-content: center; align-items: center; gap: 22px">
+          <a href="{{nextHref}}" class="pulse" style="background: #FFC83D; color: #17123D; border-radius: 999px; padding: 20px 46px; font: 700 32px Rubik, Fredoka, sans-serif; box-shadow: 0 7px 0 #D49D10; text-decoration: none">🚀 טָסִים לַכּוֹכָב הַבָּא</a>
+          <button onClick="{{savedDone}}" style="background: #241C5C; color: #FFFFFF; border: 3px solid #8F88C2; border-radius: 999px; padding: 18px 34px; font: 700 26px Rubik, Fredoka, sans-serif; cursor: pointer">נִשְׁאָרִים לְשַׂחֵק כָּאן</button>
+        </div></sc-if>
       </div>
     </sc-if><sc-for list="{{victory}}" as="v" hint-placeholder-count="0">
     <div style="position: absolute; inset: 0; z-index: 40; background: radial-gradient(circle at 50% 40%, rgba(60,40,140,0.85), rgba(8,5,30,0.97)); overflow: hidden">

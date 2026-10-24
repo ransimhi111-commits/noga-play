@@ -37,7 +37,7 @@ class Component extends DCLogic {
         box: 'display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 10px; border-radius: 26px; cursor: pointer; color: #FFFFFF; font-family: Fredoka, Rubik, sans-serif; background: rgba(36,28,92,0.85); transition: transform .2s, box-shadow .2s; ' +
           (st.picked === i ? 'border: 4px solid #FFC83D; box-shadow: 0 0 0 6px rgba(255,200,61,0.35), 0 0 40px rgba(255,200,61,0.9); transform: scale(1.06)' : 'border: 3px solid ' + p[1] + '; box-shadow: 0 0 18px ' + p[1] + ', inset 0 0 14px rgba(255,255,255,0.08)'),
         face: 'width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 35% 30%, ' + p[1] + ', #241C5C 75%); box-shadow: 0 0 22px ' + p[1],
-        pick: () => { this.setState({ picked: i, says: p[0] + '! בחירה מצוינת. יוצאים לדרך!' }); this.playClip('aud-' + p[2], ENV[p[2]]); }
+        pick: () => { this.setState({ picked: i, says: p[0] + '! בחירה מצוינת. יוצאים לדרך!' }); this.playClip('aud-' + p[2], ENV[p[2]]); try { if (this.props && this.props.store) this.props.store.set('pilot', p[0]); } catch (e) {} }
       })),
       goCls: st.picked >= 0 ? 'pulse' : '',
       goStyle: 'display: flex; align-items: center; gap: 12px; border-radius: 999px; padding: 16px 52px; font-size: 30px; font-weight: 700; text-decoration: none; ' + (st.picked >= 0 ? 'background: #FFC83D; color: #17123D; box-shadow: 0 8px 0 #D49D10, 0 0 40px rgba(255,200,61,0.7)' : 'background: rgba(36,28,92,0.7); color: #8F88C2; pointer-events: none')

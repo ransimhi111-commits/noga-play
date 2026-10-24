@@ -24,16 +24,16 @@ class Component extends DCLogic {
     const intake = st ? st.get('intake') : null;
     const ago = last ? Math.round((Date.now() - last) / 86400000) : -1;
     const practised = [], strong = [], weak = []; let games = 0;
-    SUBJ.forEach(([p, name]) => { for (let i = 1; i <= 7; i++) { const d = st ? st.getDone(p + 'L' + i) : {}; let n = 0; for (const k in d) if (k !== '_total') { n++; games++; const v = Number(d[k]) || 0; const t = (GAMES[p][i - 1][Number(k)] || '') + ' (' + name + ' ' + i + ')'; if (v >= 4) strong.push(t); else if (v <= 2) weak.push(t); } if (n) practised.push(name + ' רמה ' + i + ' – ' + NAMES[p][i - 1] + ' (' + n + '/7)'); } });
+    SUBJ.forEach(([p, name]) => { for (let i = 1; i <= 7; i++) { const d = st ? st.getDone(p + 'L' + i) : {}; let n = 0; for (const k in d) if (k !== '_total') { n++; games++; const v = Number(d[k]) || 0; const t = (GAMES[p][i - 1][Number(k)] || '') + ' (' + name + ' ' + i + ')'; const hp = ((st && st.get('help')) || {})[p + 'L' + i] || {}; const hn = Number(hp[k]) || 0; if (v <= 2 || hn >= 3) weak.push(t + (v > 2 ? ' – נעזר/ה ברמזים' : '')); else if (v >= 4) strong.push(t); } if (n) practised.push(name + ' רמה ' + i + ' – ' + NAMES[p][i - 1] + ' (' + n + '/7)'); } });
     const when = mins ? mins + ' דק׳ סה״כ' + (ago === 0 ? ', שיחקו היום' : ago > 0 ? ', לפני ' + ago + ' ימים' : '') : 'עדיין לא שיחקו';
     const report = [
       { k: 'מה תרגל/ה · ' + when + (intake ? ' · יעד: ' + intake.minutes + ' דק׳ ביום' : ''), v: practised.length ? practised.join(' · ') : 'עדיין לא התחילו. מתחילים מהמפה.', c: '#34D1BF' },
-      { k: 'מה הולך טוב לבד (4–5 כוכבים)', v: strong.length ? strong.length + ' משחקים, למשל: ' + strong.slice(0, 3).join(', ') : games ? 'עוד לא – זה בסדר, רק מתחילים.' : 'עוד אין נתונים', c: '#FFC83D' },
-      { k: 'במה כדאי לעזור (1–2 כוכבים)', v: weak.length ? weak.slice(0, 3).join(', ') + ' – כדאי לשחק יחד פעם אחת, ואז לתת לנסות לבד.' : games ? 'כרגע אין – נוגה מסתדרת עם הילד/ה.' : 'עוד אין נתונים', c: '#FF7A59' },
+      { k: 'מה הולך טוב לבד (4–5 כוכבים, בלי הרבה רמזים)', v: strong.length ? strong.length + ' משחקים, למשל: ' + strong.slice(0, 3).join(', ') : games ? 'עוד לא – זה בסדר, רק מתחילים.' : 'עוד אין נתונים', c: '#FFC83D' },
+      { k: 'במה כדאי לעזור (1–2 כוכבים, או ניצחון בעזרת רמזים)', v: weak.length ? weak.slice(0, 3).join(', ') + ' – כדאי לשחק יחד פעם אחת, ואז לתת לנסות לבד.' : games ? 'כרגע אין – נוגה מסתדרת עם הילד/ה.' : 'עוד אין נתונים', c: '#FF7A59' },
     ];
     return {
       report, subjects,
-      note: st ? 'רמה נפתחת אחרי שמסיימים לפחות 5 מתוך 7 משחקים. ההתקדמות נשמרת במכשיר הזה.' : 'תצוגה לדוגמה. באפליקציה מוצגת ההתקדמות האמיתית מהמכשיר.',
+      note: st ? 'רמה נפתחת אחרי 5 משחקים עם 3 כוכבים ומעלה, ורמה שנפתחה נשארת פתוחה. ההתקדמות נשמרת במכשיר הזה.' : 'תצוגה לדוגמה. באפליקציה מוצגת ההתקדמות האמיתית מהמכשיר.',
       muteLabel: mute ? '🔇 צלילי משחק כבויים' : '🔊 צלילי משחק פועלים', muteStyle: btn(!mute),
       toggleMute: () => { if (st) { st.set('mute', !mute); this.setState({ v: this.state.v + 1 }); } },
       openLabel: openAll ? '🔓 כל הרמות פתוחות (מצב בודקים)' : '🔒 רמות נפתחות לפי התקדמות', openStyle: btn(openAll),
