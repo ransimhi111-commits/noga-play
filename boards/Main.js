@@ -6,11 +6,33 @@ const SHIP = "assets/ship.webp";
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { talking: false, mouth: 0, playing: false, heard: false }; }
 
-  playClip(id, env, after) {
+  // Lip-synced narration: the clip's own Wav2Lip video (same mp3) replaces the generic talking loop and follows the audio clock.
+  lipLoad(id) {
+    const vid = document.getElementById('noga-vid'); if (!vid) return false;
+    const key = id.replace(/^aud-/, '').replace(/-audio$/, '');
+    if (!/^(story|home|p_[a-z]+)$/.test(key)) return false;
+    if (vid.getAttribute('data-lip') !== key) {
+      const mp4 = vid.canPlayType && vid.canPlayType('video/mp4; codecs="avc1.42E01E"');
+      vid.setAttribute('data-lip', key); vid.loop = false;
+      vid.src = 'video/lip_scr_' + key + (mp4 ? '.mp4' : '.webm');
+      try { vid.load(); } catch (e) {}
+    }
+    return true;
+  }
+  lipFollow(au, live) {
+    const vid = document.getElementById('noga-vid'); if (!vid) return;
+    // past the video's last frame (it can end a few ms before the mp3): hold that frame, since play() on an ended video restarts it
+    if (!live || (vid.duration && au.currentTime >= vid.duration - 0.06)) { if (!vid.paused) vid.pause(); return; }
+    if (vid.readyState >= 1 && Math.abs(vid.currentTime - au.currentTime) > 0.12) { try { vid.currentTime = au.currentTime; } catch (e) {} }
+    if (vid.paused) { const q = vid.play(); if (q && q.catch) q.catch(() => {}); }
+  }
+  playClip(id, env, after, resume) {
     const au = document.getElementById(id); if (!au) return;
     ['story-audio','home-audio','pilot-audio'].forEach(x => { const o = document.getElementById(x); if (o && o !== au) { try { o.pause(); } catch (e) {} } });
-    try { au.currentTime = 0; } catch (e) {}
-    const p = au.play(); if (p && p.catch) p.catch(() => this.setState({ blocked: true }));
+    if (!resume) { try { au.currentTime = 0; } catch (e) {} }
+    const lip = this.lipLoad(id);
+    if (lip) au.onplaying = () => this.lipFollow(au, true);
+    const p = au.play(); if (p && p.catch) p.catch(() => this.setState({ blocked: true, playing: false }));
     this.setState({ playing: true, blocked: false });
     clearInterval(this.mi);
     this.mi = setInterval(() => {
@@ -18,7 +40,8 @@ class Component extends DCLogic {
       const live = !au.paused && !au.ended;
       const talking = live && v >= 2;
       const vid = document.getElementById('noga-vid');
-      if (vid) { if (talking && vid.paused) { const q = vid.play(); if (q && q.catch) q.catch(() => {}); } if (!talking && !vid.paused) vid.pause(); }
+      if (lip) this.lipFollow(au, live);
+      else if (vid) { if (talking && vid.paused) { const q = vid.play(); if (q && q.catch) q.catch(() => {}); } if (!talking && !vid.paused) vid.pause(); }
       this.setState({ talking: talking, mouth: talking ? (k % 2) + 1 : 0, t: t });
       if (au.ended) { clearInterval(this.mi); this.setState({ talking: false, mouth: 0, playing: false }); if (vid) vid.pause(); if (after) after(); }
     }, 100);

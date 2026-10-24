@@ -140,8 +140,9 @@
     doc.head.childNodes.forEach(n => {
       if (n.nodeType !== 1) return;
       const sig = n.outerHTML; if (injected[sig]) return; injected[sig] = 1;
-      if (n.tagName === 'LINK' && /fonts\.(googleapis|gstatic)/.test(n.getAttribute('href') || '')) { const l = document.createElement('link'); l.rel = n.rel; l.href = n.href; document.head.appendChild(l); }
-      else if (n.tagName === 'STYLE') { const s = document.createElement('style'); s.textContent = n.textContent; document.head.appendChild(s); }
+      // Google Fonts links in the boards are skipped: the fonts ship with the app (fonts/fonts.css), offline and with no outside request.
+      if (n.tagName === 'LINK') return;
+      if (n.tagName === 'STYLE') { const s = document.createElement('style'); s.textContent = n.textContent; document.head.appendChild(s); }
     });
   }
   class DCLogic extends R.Component {
