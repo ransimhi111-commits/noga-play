@@ -177,6 +177,31 @@
     const [err, setErr] = R.useState('');
     const [portrait, setPortrait] = R.useState(false);
     const [keepPortrait, setKeepPortrait] = R.useState(false);
+    const [menu, setMenu] = R.useState(false);
+    const [guide, setGuide] = R.useState(false);
+    const go = (target) => { setMenu(false); unlockAudio(); setName(target); setStarted(true); history.pushState({ b: target }, '', '#' + target); };
+    const GUIDE = [
+      ['📱', 'מחזיקים את הטלפון לרוחב. בפעם הראשונה לוחצים "מתחילים" ונוגה מספרת את הסיפור.'],
+      ['📝', 'שאלון של 2 דקות להורים קובע מאיפה הילד/ה מתחיל/ה בכל מקצוע. אפשר לדלג ולהתחיל מרמה 1.'],
+      ['🪐', 'הילד/ה בוחר/ת תחום (עברית, חשבון, אנגלית) ואז כוכב. בכל כוכב: קודם "שיעור עם נוגה", אחר כך 7 משחקים.'],
+      ['🔊', 'נוגה אומרת הכול בקול, לא צריך לדעת לקרוא. כשלא בטוחים לוחצים על הרמקול. אחרי טעויות נוגה עוזרת לבד.'],
+      ['⭐', 'כל משחק מסתיים ב-1 עד 5 כוכבים, ותמיד אפשר לשחק שוב ולשפר. כוכב חדש נפתח אחרי 5 מתוך 7 משחקים.'],
+      ['⏱️', '10–20 דקות ביום מספיקות. עדיף קצת כל יום מאשר הרבה בבת אחת.'],
+      ['👨‍👩‍👧', 'אזור הורים (כפתור ☰ בפינה): דוח קצר על ההתקדמות, שאלון מחדש, צלילים, פתיחת כל הרמות.'],
+      ['🔒', 'הכול נשמר במכשיר הזה בלבד. האפליקציה לא אוספת ולא שולחת שום מידע.'],
+    ];
+    const guideOv = guide ? h('div', { className: 'ov', onClick: () => setGuide(false) },
+      h('div', { className: 'guide', onClick: (e) => e.stopPropagation() },
+        h('div', { className: 'guide-head' }, h('span', null, 'איך משתמשים? מדריך קצר להורים'), h('button', { className: 'ov-x', 'aria-label': 'סגירה', onClick: () => setGuide(false) }, '✕')),
+        h('ol', { className: 'guide-list' }, GUIDE.map((g, i) => h('li', { key: i }, h('span', { className: 'guide-ic' }, g[0]), h('span', null, g[1])))),
+        h('button', { className: 'guide-ok', onClick: () => setGuide(false) }, 'הבנתי'))) : null;
+    const menuOv = started ? h(R.Fragment, null,
+      h('button', { className: 'fab', 'aria-label': 'תפריט', onClick: () => setMenu(m => !m) }, menu ? '✕' : '☰'),
+      menu ? h('div', { className: 'menu' },
+        h('button', { onClick: () => go(CFG.home) }, '🏠 מסך הבית'),
+        h('button', { onClick: () => { setMenu(false); setStarted(false); history.pushState({ b: 'Start' }, '', '#'); } }, '▶ מסך הפתיחה'),
+        h('button', { onClick: () => go('Parent') }, '👨‍👩‍👧 אזור הורים'),
+        h('button', { onClick: () => { setMenu(false); setGuide(true); } }, '❓ איך משתמשים')) : null) : null;
     R.useEffect(() => { const f = () => setPortrait(window.innerHeight > window.innerWidth && window.innerWidth < 900); f(); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f); }, []);
     const nav = R.useCallback((target, replace) => {
       if (!store.isOpen(target)) return;
@@ -203,8 +228,11 @@
         h('img', { src: 'assets/noga_friendly.webp', alt: 'נוגה', className: 'start-noga' }),
         h('h1', null, 'לְהַצִּיל אֶת כּוֹכַב נֹגַהּ'),
         h('button', { className: 'start-btn', onClick: () => { unlockAudio(); goFullscreen(); setStarted(true); history.replaceState({ b: name }, '', '#' + name); } }, '▶  מַתְחִילִים'),
-        h('a', { className: 'parent-link', href: '#', onClick: (e) => { e.preventDefault(); unlockAudio(); setName('Parent'); setStarted(true); history.replaceState({ b: 'Parent' }, '', '#Parent'); } }, 'אֵזוֹר הוֹרִים'),
-        !S.intake ? h('a', { className: 'parent-link intake-link', href: '#', onClick: (e) => { e.preventDefault(); unlockAudio(); setName('Intake'); setStarted(true); history.replaceState({ b: 'Intake' }, '', '#Intake'); } }, '📝 הורים: שאלון קצר לבחירת רמה (2 דק׳)') : null) : null);
+        h('div', { className: 'start-parents' },
+          h('button', { className: 'pbtn', onClick: () => go('Parent') }, '👨‍👩‍👧 אזור הורים'),
+          !S.intake ? h('button', { className: 'pbtn pbtn-gold', onClick: () => go('Intake') }, '📝 שאלון לבחירת רמה (2 דק׳)') : null,
+          h('button', { className: 'pbtn', onClick: () => setGuide(true) }, '❓ איך משתמשים'))) : null,
+      menuOv, guideOv);
     return h(R.Fragment, null, stage, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
   }
   RD.createRoot(document.getElementById('root')).render(h(App));
