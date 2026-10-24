@@ -2,6 +2,7 @@ window.__DCB=window.__DCB||{};window.__DCB["Main"]=function(DCLogic,React){
 
 const IMGS = {"pointing": "assets/noga_pointing.webp", "clapping": "assets/noga_clapping.webp", "tryagain": "assets/noga_tryagain.webp", "wow": "assets/noga_wow.webp", "thumbsup": "assets/noga_thumbsup.webp", "thinking": "assets/noga_thinking.webp", "listening": "assets/noga_listening.webp", "friendly": "assets/noga_friendly.webp", "talk": ["assets/noga_talk2.webp", "assets/noga_talk1.webp", "assets/noga_talk2.webp"]};
 const ENV = {"home": "001699973783355420111272892297416353684000000954466652000025313540013133963227852200"};
+const SHIP = "assets/ship.webp";
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { talking: false, mouth: 0, playing: false, heard: false }; }
 
@@ -31,7 +32,10 @@ class Component extends DCLogic {
     const go = () => { this.setState({ heard: true }); this.playClip('home-audio', ENV.home); };
     const st = this.props && this.props.store, PL = ['נפטון', 'אורנוס', 'שבתאי', 'צדק', 'מאדים', 'כדור הארץ', 'כוכב נוגה'];
     const cur = (pre) => { let n = 1; if (st) for (let i = 2; i <= 7; i++) if (st.isOpen(pre + 'L' + i)) n = i; return 'רמה ' + n + ' · ' + PL[n - 1]; };
-    return { nogaGlow: this.glow(), nogaImg: this.frame(), speak: go, playHint: (this.state.heard || this.state.playing) ? [] : [{ go: go }], hebLabel: cur('Heb'), mathLabel: cur('Math'), engLabel: cur('Eng') };
+    let parts = 0; const dots = []; ['Heb', 'Math', 'Eng'].forEach(p => { for (let i = 1; i <= 7; i++) { const c = st ? st.isComplete(p + 'L' + i) : false; if (c) parts++; dots.push({ s: 'width: 12px; height: 12px; border-radius: 50%; background: ' + (c ? '#FFC83D' : 'rgba(255,255,255,0.18)') + '; box-shadow: ' + (c ? '0 0 8px #FFC83D' : 'none') }); } });
+    const stk = st ? (st.get('stickers') || {}) : {};
+    return { nogaGlow: this.glow(), nogaImg: this.frame(), speak: go, playHint: (this.state.heard || this.state.playing) ? [] : [{ go: go }], hebLabel: cur('Heb'), mathLabel: cur('Math'), engLabel: cur('Eng'),
+             shipImg: SHIP, shipParts: parts + '/21 חֲלָקִים', shipDots: dots, stickerCount: String(Object.keys(stk).length) };
   }
 }
 

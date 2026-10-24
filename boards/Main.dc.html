@@ -61,6 +61,15 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
       <a href="Parent.dc.html" aria-label="אזור הורים" style="width: 46px; height: 46px; border-radius: 50%; background: rgba(36,28,92,0.85); display: flex; align-items: center; justify-content: center; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9C3F2" stroke-width="2.2" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></a>
     </div>
   </div>
+  <div style="display: flex; align-items: center; justify-content: center; gap: 14px; position: relative; z-index: 3">
+    <div style="display: flex; align-items: center; gap: 12px; background: rgba(36,28,92,0.85); border: 2px solid rgba(255,200,61,0.45); border-radius: 999px; padding: 6px 18px 6px 10px">
+      <img src="{{shipImg}}" alt="" style="width: 54px; height: 36px; object-fit: contain">
+      <span style="font-size: 17px; color: #C9C3F2">הַחֲלָלִית שֶׁלָּכֶם:</span>
+      <span style="font-size: 20px; font-weight: 700; color: #FFC83D">{{shipParts}}</span>
+      <div style="display: flex; gap: 4px"><sc-for list="{{shipDots}}" as="d" hint-placeholder-count="21"><span style="{{d.s}}"></span></sc-for></div>
+      <span style="font-size: 17px; color: #C9C3F2">· 📒 {{stickerCount}}</span>
+    </div>
+  </div>
   <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 0">
     <div style="display: flex; align-items: center; gap: 22px">
       <button onClick="{{speak}}" style="max-width: 360px; display: flex; gap: 10px; align-items: flex-start; text-align: right; background: #FFFFFF; color: #17123D; border: 0; border-radius: 26px 26px 26px 6px; padding: 16px 22px; font-family: Fredoka, Rubik, sans-serif; font-size: 22px; font-weight: 600; line-height: 1.4; cursor: pointer">
@@ -78,9 +87,9 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
     </div>
   </div>
   <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px">
-    <a href="Map.dc.html" style="display: flex; align-items: center; gap: 16px; background: #FF7A59; color: #17123D; border-radius: 30px; padding: 22px 24px; min-height: 120px; box-sizing: border-box; text-decoration: none; box-shadow: 0 8px 0 #C9503A, 0 0 30px rgba(255,122,89,0.5)"><span style="font-size: 58px; font-weight: 700; line-height: 1">א</span><span style="display: flex; flex-direction: column"><span style="font-size: 32px; font-weight: 700">עברית</span><span style="font-size: 17px">{hebLabel}</span></span></a>
-    <a href="MapMath.dc.html" style="display: flex; align-items: center; gap: 16px; background: #FFC83D; color: #17123D; border-radius: 30px; padding: 22px 24px; min-height: 120px; box-sizing: border-box; text-decoration: none; box-shadow: 0 8px 0 #D49D10, 0 0 30px rgba(255,200,61,0.5)"><span style="font-size: 58px; font-weight: 700; line-height: 1">7</span><span style="display: flex; flex-direction: column"><span style="font-size: 32px; font-weight: 700">חשבון</span><span style="font-size: 17px">{mathLabel}</span></span></a>
-    <a href="MapEng.dc.html" style="display: flex; align-items: center; gap: 16px; background: #34D1BF; color: #17123D; border-radius: 30px; padding: 22px 24px; min-height: 120px; box-sizing: border-box; text-decoration: none; box-shadow: 0 8px 0 #1F9C8E, 0 0 30px rgba(52,209,191,0.5)"><span style="font-size: 58px; font-weight: 700; line-height: 1">A</span><span style="display: flex; flex-direction: column"><span style="font-size: 32px; font-weight: 700">אנגלית</span><span style="font-size: 17px">{engLabel}</span></span></a>
+    <a href="Map.dc.html" style="display: flex; align-items: center; gap: 16px; background: #FF7A59; color: #17123D; border-radius: 30px; padding: 22px 24px; min-height: 120px; box-sizing: border-box; text-decoration: none; box-shadow: 0 8px 0 #C9503A, 0 0 30px rgba(255,122,89,0.5)"><span style="font-size: 58px; font-weight: 700; line-height: 1">א</span><span style="display: flex; flex-direction: column"><span style="font-size: 32px; font-weight: 700">עברית</span><span style="font-size: 17px">{{hebLabel}}</span></span></a>
+    <a href="MapMath.dc.html" style="display: flex; align-items: center; gap: 16px; background: #FFC83D; color: #17123D; border-radius: 30px; padding: 22px 24px; min-height: 120px; box-sizing: border-box; text-decoration: none; box-shadow: 0 8px 0 #D49D10, 0 0 30px rgba(255,200,61,0.5)"><span style="font-size: 58px; font-weight: 700; line-height: 1">7</span><span style="display: flex; flex-direction: column"><span style="font-size: 32px; font-weight: 700">חשבון</span><span style="font-size: 17px">{{mathLabel}}</span></span></a>
+    <a href="MapEng.dc.html" style="display: flex; align-items: center; gap: 16px; background: #34D1BF; color: #17123D; border-radius: 30px; padding: 22px 24px; min-height: 120px; box-sizing: border-box; text-decoration: none; box-shadow: 0 8px 0 #1F9C8E, 0 0 30px rgba(52,209,191,0.5)"><span style="font-size: 58px; font-weight: 700; line-height: 1">A</span><span style="display: flex; flex-direction: column"><span style="font-size: 32px; font-weight: 700">אנגלית</span><span style="font-size: 17px">{{engLabel}}</span></span></a>
   </div>
 </div>
 </x-dc>

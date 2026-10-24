@@ -59,6 +59,17 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
 .tapme{animation:glowPulse 1.2s ease-in-out infinite}
 @keyframes popIn{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
 .pop{animation:popIn .35s ease-out}
+@keyframes land0{0%{transform:translateY(60px) scale(.6);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes land1{0%{transform:translateY(60px) scale(.6);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+.land0{animation:land0 .45s cubic-bezier(.2,.8,.3,1.2) backwards}
+.land1{animation:land1 .45s cubic-bezier(.2,.8,.3,1.2) backwards}
+@keyframes fly{0%{transform:translate(0,0) scale(.6);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.3) rotate(180deg);opacity:0}}
+.pt{position:absolute;z-index:60;pointer-events:none;animation:fly .75s ease-out forwards;margin:-14px 0 0 -14px}
+@keyframes goldPulse{0%,100%{transform:scale(1) rotate(-8deg)}50%{transform:scale(1.25) rotate(8deg)}}
+.goldstar{animation:goldPulse .8s ease-in-out infinite}
+@keyframes stkPop{0%{transform:scale(0) rotate(-30deg)}70%{transform:scale(1.3) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+.stk{display:inline-block;animation:stkPop .7s cubic-bezier(.2,.8,.3,1.2) 1s backwards}
+.gift{animation:popIn .4s ease-out .9s backwards}
 @keyframes flee{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}25%{transform:translate(60px,-40px) rotate(20deg) scale(1.05)}100%{transform:translate(760px,-640px) rotate(540deg) scale(.15);opacity:0}}
 .alien-flee{animation:flee 3.2s cubic-bezier(.4,0,.8,1) .6s forwards}
 @keyframes planetGlow{0%,100%{filter:drop-shadow(0 0 40px rgba(255,200,61,.5))}50%{filter:drop-shadow(0 0 90px rgba(255,200,61,1))}}
@@ -75,8 +86,11 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
           <span style="font-size: 17px; color: #C9C3F2">{{levelLabel}}</span>
           <span style="font-size: 36px; font-weight: 700; text-shadow: 0 2px 12px rgba(0,0,0,0.6)">{{title}}</span>
         </div>
-        <div style="display: flex; gap: 4px; background: rgba(23,18,61,0.7); border-radius: 999px; padding: 6px 12px" aria-label="משחקים שהושלמו">
-          <sc-for list="{{hubStars}}" as="s" hint-placeholder-count="4"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="{{s.fill}}"/></svg></sc-for>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <button onClick="{{openAlbum}}" aria-label="אלבום המדבקות" style="display: flex; align-items: center; gap: 8px; background: rgba(23,18,61,0.7); border: 2px solid rgba(255,200,61,0.5); border-radius: 999px; padding: 6px 14px; color: #FFFFFF; font: 700 20px Rubik, sans-serif; cursor: pointer"><span style="font-size: 24px">📒</span><span>{{stickerCount}}</span></button>
+          <div style="display: flex; gap: 4px; background: rgba(23,18,61,0.7); border-radius: 999px; padding: 6px 12px" aria-label="משחקים שהושלמו">
+            <sc-for list="{{hubStars}}" as="s" hint-placeholder-count="4"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="{{s.fill}}"/></svg></sc-for>
+          </div>
         </div>
       </div>
       <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 150px; gap: 14px">
@@ -665,7 +679,20 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
         </div>
       </div>
     </sc-if>
-  </sc-if><div style="position: absolute; bottom: 22px; right: 30px; display: flex; align-items: flex-end; gap: 12px; z-index: 50">
+  </sc-if><sc-if value="{{alienShow}}" hint-placeholder-val="{{false}}"><img src="{{planetImg}}" alt="" style="{{planetMiniStyle}}"><img src="{{alienMiniImg}}" alt="" style="{{alienMiniStyle}}"></sc-if>
+    <sc-if value="{{comboShow}}" hint-placeholder-val="{{false}}"><div class="pop" style="position: absolute; left: 36px; top: 96px; z-index: 40; background: linear-gradient(90deg, #FF7A59, #FFC83D); color: #17123D; border-radius: 999px; padding: 8px 26px; font: 700 28px Rubik, Fredoka, sans-serif; box-shadow: 0 6px 20px rgba(255,122,89,0.6); pointer-events: none">{{comboText}}</div></sc-if>
+    <sc-for list="{{gold}}" as="gd" hint-placeholder-count="0"><button onClick="{{gd.tap}}" class="goldstar" aria-label="כוכב זהב" style="{{gd.style}}">🌟</button></sc-for>
+    <sc-if value="{{goldMsg}}" hint-placeholder-val="{{false}}"><div class="pop" style="position: absolute; left: 50%; top: 200px; transform: translateX(-50%); z-index: 45; background: #FFC83D; color: #17123D; border-radius: 24px; padding: 14px 30px; font: 700 30px Rubik, sans-serif; box-shadow: 0 8px 30px rgba(255,200,61,0.7); pointer-events: none">🌟 כּוֹכַב זָהָב! מַדְבֵּקָה נְדִירָה!</div></sc-if>
+    <sc-for list="{{burst}}" as="b" hint-placeholder-count="0"><span class="pt" style="{{b.style}}">{{b.ch}}</span></sc-for>
+    <sc-if value="{{albumShow}}" hint-placeholder-val="{{false}}">
+      <div style="position: absolute; inset: 0; z-index: 80; background: rgba(8,5,30,0.85); display: flex; align-items: center; justify-content: center">
+        <div style="background: #17123D; border: 3px solid rgba(255,200,61,0.6); border-radius: 28px; padding: 22px 28px; width: 900px; max-height: 700px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 32px; font-weight: 700">📒 אַלְבּוֹם הַמַּדְבֵּקוֹת · {{stickerCount}}</span><button onClick="{{closeAlbum}}" aria-label="סגירה" style="width: 56px; height: 56px; border-radius: 50%; border: 0; background: #241C5C; color: #FFFFFF; font-size: 26px; cursor: pointer">✕</button></div>
+          <span style="font-size: 18px; color: #C9C3F2">כָּל מִשְׂחָק שֶׁמְּנַצְּחִים נוֹתֵן מַדְבֵּקָה. מַדְבֵּקוֹת זָהָב 🌟 מְקַבְּלִים רַק כְּשֶׁתּוֹפְסִים כּוֹכַב זָהָב!</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; overflow: auto; max-height: 480px"><sc-for list="{{albumItems}}" as="a" hint-placeholder-count="0"><span style="width: 84px; height: 84px; border-radius: 18px; background: rgba(255,255,255,0.08); border: {{a.mine}}; display: flex; align-items: center; justify-content: center; font-size: 50px">{{a.e}}</span></sc-for></div>
+        </div>
+      </div>
+    </sc-if><div style="position: absolute; bottom: 22px; right: 30px; display: flex; align-items: flex-end; gap: 12px; z-index: 50">
     <div style="width: 132px; height: 158px; border-radius: 66px 66px 18px 18px; border: 3px solid #34D1BF; background: rgba(52,209,191,0.20); overflow: hidden; box-shadow: {{nogaGlow}}; flex-shrink: 0; position: relative">
       <img src="{{nogaImg}}" alt="נוגה" style="width: 100%; height: 100%; object-fit: cover; object-position: top">
       <video data-noga-vid="{{vidKey}}" muted playsinline loop preload="auto" aria-hidden="true" style="{{nogaVidStyle}}"><source src="video/noga-talk.mp4" type="video/mp4"><source src="video/noga-talk.webm" type="video/webm"></video>
@@ -688,6 +715,7 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
         <img src="{{alienDizzy}}" alt="" class="alien-flee" style="position: absolute; left: 50%; top: 50%; width: 260px; height: 260px; margin: -130px 0 0 -130px; object-fit: contain">
         <div style="position: absolute; left: 0; right: 0; top: 60px; text-align: center; font-size: 64px; font-weight: 700; color: #FFC83D; text-shadow: 0 4px 24px rgba(0,0,0,0.6)" class="pop">הִצַּלְנוּ אֶת הַכּוֹכָב! 🎉</div>
         <div style="position: absolute; left: 0; right: 0; top: 150px; text-align: center; font-size: 30px; color: #FFFFFF">הַחַיְזָר בָּרַח!</div>
+        <div style="position: absolute; left: 120px; right: 120px; bottom: 130px; text-align: center; font-size: 26px; color: #C9C3F2; line-height: 1.4">{{storyText}}</div>
         <button onClick="{{savedDone}}" style="position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); background: #FFC83D; color: #17123D; border: 0; border-radius: 999px; padding: 18px 48px; font: 700 28px Rubik, Fredoka, sans-serif; box-shadow: 0 7px 0 #D49D10; cursor: pointer">מַמְשִׁיכִים ←</button>
       </div>
     </sc-if><sc-for list="{{victory}}" as="v" hint-placeholder-count="0">
@@ -700,6 +728,7 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
       <div class="v-free" style="position: absolute; left: 175px; top: 310px; min-width: 190px; height: 190px; padding: 0 26px; box-sizing: border-box; border-radius: 95px; background: #FFFFFF; color: #FF7A59; display: flex; align-items: center; justify-content: center; font-family: Rubik, Fredoka, sans-serif; font-size: {{v.size}}; font-weight: 700; white-space: nowrap; box-shadow: 0 0 0 10px rgba(255,255,255,0.25), 0 0 60px rgba(255,200,61,0.9)">{{v.freed}}</div>
       <div class="v-text" style="position: absolute; left: 0; right: 0; bottom: 200px; display: flex; flex-direction: column; align-items: center; gap: 16px">
         <span style="font-size: 52px; font-weight: 700; color: #FFC83D; text-shadow: 0 3px 16px rgba(0,0,0,0.6)">נִצָּחוֹן!</span>
+        <sc-if value="{{stickerShow}}" hint-placeholder-val="{{false}}"><div class="gift" style="display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.12); border: 2px solid rgba(255,200,61,0.6); border-radius: 999px; padding: 8px 22px 8px 12px"><span class="stk" style="font-size: 54px; line-height: 1">{{stickerEmoji}}</span><span style="font-size: 22px; font-weight: 700; color: #FFFFFF">{{stickerLabel}}</span></div></sc-if>
         <div style="display: flex; gap: 10px"><sc-for list="{{v.stars}}" as="st" hint-placeholder-count="5"><svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.7 5.8 21.2l1.4-7L2 9.4l7-.8z" fill="{{st.fill}}" stroke="#17123D" stroke-width="1"/></svg></sc-for></div>
         <div style="display: flex; gap: 16px">
           <button onClick="{{v.hub}}" data-win="hub" style="background: #FFC83D; color: #17123D; border: 0; border-radius: 999px; padding: 26px 52px; font-family: Fredoka, Rubik, sans-serif; font-size: 34px; font-weight: 700; cursor: pointer; box-shadow: 0 7px 0 #D49D10">{{v.hubLabel}}</button>
