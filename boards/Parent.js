@@ -17,7 +17,7 @@ class Component extends DCLogic {
       return { n: String(i + 1), name: nm, stars: n ? '⁦' + '★'.repeat(Math.round(sum / n)) + '⁩' : '', label: !open ? '🔒' : comp ? '✓ ' + cnt + '/7' : cnt + '/7',
         style: 'display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 12px; ' + (comp ? 'background: rgba(52,209,191,0.3); border: 2px solid #34D1BF' : open ? 'background: rgba(255,255,255,0.08); border: 2px solid rgba(201,195,242,0.35)' : 'background: rgba(0,0,0,0.25); border: 2px solid transparent; opacity: 0.6') };
     }) }));
-    const mute = st ? !!st.get('mute') : false, openAll = st ? !!st.get('openAll') : false;
+    const calm = st ? !!st.get('calm') : false, mute = st ? !!st.get('mute') : false, openAll = st ? !!st.get('openAll') : false;
     // 3-line report: what was practised, what goes well alone, where help is useful
     const sec = st ? (st.get('time') || 0) : 0, last = st ? st.get('lastPlay') : 0;
     const mins = Math.round(sec / 60);
@@ -35,6 +35,8 @@ class Component extends DCLogic {
       report, subjects,
       note: st ? 'רמה נפתחת אחרי 5 משחקים עם 3 כוכבים ומעלה, ורמה שנפתחה נשארת פתוחה. ההתקדמות נשמרת במכשיר הזה.' : 'תצוגה לדוגמה. באפליקציה מוצגת ההתקדמות האמיתית מהמכשיר.',
       muteLabel: mute ? '🔇 צלילי משחק כבויים' : '🔊 צלילי משחק פועלים', muteStyle: btn(!mute),
+      calmLabel: calm ? '😌 הַחַיְזָר בַּמִּשְׂחָק "מִתְקָרֵב" לֹא זָז' : '👾 הַחַיְזָר בַּמִּשְׂחָק "מִתְקָרֵב" זָז', calmStyle: btn(!calm),
+      toggleCalm: () => { if (st) { st.set('calm', !calm); this.setState({ v: this.state.v + 1 }); } },
       toggleMute: () => { if (st) { st.set('mute', !mute); this.setState({ v: this.state.v + 1 }); } },
       openLabel: openAll ? '🔓 כל הרמות פתוחות (מצב בודקים)' : '🔒 רמות נפתחות לפי התקדמות', openStyle: btn(openAll),
       toggleOpen: () => { if (st) { st.set('openAll', !openAll); this.setState({ v: this.state.v + 1 }); } },

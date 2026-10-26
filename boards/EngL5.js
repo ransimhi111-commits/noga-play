@@ -42,6 +42,15 @@ function sfx(kind, muted, step) {
   } catch (err) {}
 }
 const AUDIO_BASE = 'audio/c/';
+// boss game ("the alien is coming"): a virtual 8th game built from the planet's own multiple-choice questions
+const BOSS = 99;
+const BOSS_LINES = {
+  __boss_intro: 'הַחַיְזָר מִתְקָרֵב לַחֲלָלִית! כָּל תְּשׁוּבָה נְכוֹנָה הוֹדֶפֶת אוֹתוֹ אָחוֹרָה.',
+  __boss_shield: 'אוֹי, הַמָּגֵן נִשְׁבַּר! מַמְשִׁיכִים.',
+  __boss_save: 'נוֹגָה שָׁלְחָה מָגִנִּים חֲדָשִׁים. מַמְשִׁיכִים!',
+  __boss_won: 'נִצַּחְנוּ אֶת הַבּוֹס! הַחַיְזָר בּוֹרֵחַ!',
+  __boss_locked: 'קֹדֶם מְשַׂחֲקִים בְּעוֹד מִשְׂחָקִים בַּכּוֹכָב, וְאָז הַחַיְזָר יַגִּיעַ!',
+};
 // Noga's voice is embedded in the board (CLIPDATA, base64 mp3) so it works on any computer, in the canvas and in the app.
 const CLIP_URLS = {};
 function clipUrl(id) {
@@ -108,7 +117,7 @@ function visModel(v, scale) {
 function DEFAULTS() {
   const e = visModel(null);
   return { lessonTitle: '', lessonGrid: '', lessonCards: [], hasSel: false, noSel: true, selT: '', selPic: '', selSub: '', selStyle: '', selParts: [], selVis: e,
-    gameTitle: '', gameIcon: '', progress: [], is_choose: false, is_shoot: false, is_catch: false, is_match: false, is_keypad: false, is_path: false, is_puzzle: false, is_memory: false, is_sort: false, is_order: false,
+    gameTitle: '', gameIcon: '', progress: [], bossCard: [], bossLane: [], is_choose: false, is_shoot: false, is_catch: false, is_match: false, is_keypad: false, is_path: false, is_puzzle: false, is_memory: false, is_sort: false, is_order: false,
     shakeSlots: '', pT: '', pPic: '', pSub: '', hasPT: false, hasPPic: false, hasPSub: false, pTStyle: '', pVis: e, hasStory: false, storyLines: [],
     opts: [], optsWrap: '', rocks: [], laser: 'display: none', laserX: 0, laserY: 0, boom: 'display: none', stones: [], astro: 'display: none', astroCls: '',
     fallers: [], kSlots: [], kComposed: '', hasComposed: false, kDir: '', keys: [], keysWrap: '', keyBack: () => {}, pzDir: '', pzSlots: [], pieces: [],
@@ -129,9 +138,48 @@ class Component extends DCLogic {
     // child's name before a few big moments when the name's recording exists (names/<id>.mp3); otherwise as before
     let kid = null; try { kid = this.store && this.store.get('kid'); } catch (err) {}
     this.gender = kid && (kid.g === 'm' || kid.g === 'f') ? kid.g : '';
+    Object.keys(BOSS_LINES).forEach(k => { if (!CLIPS[k]) CLIPS[k] = [BOSS_LINES[k], '', 0]; });
     if (kid && kid.audio && kid.nid && kid.name) { CLIPS.__name = [kid.name + '!', '35775310', 1]; CLIP_URLS.__name = 'names/' + kid.nid + '.mp3'; } else delete CLIPS.__name;
   }
   gv(ids) { const g = this.gender; return g ? ids.map(i => (CLIPS[i + '_' + g] && CLIPS[i + '_' + g][2]) ? i + '_' + g : i) : ids; }
+  // ---------------- boss ----------------
+  bossPool() {
+    if (this._bossPool) return this._bossPool;
+    const seen = {}, out = [];
+    LV.games.forEach(G => {
+      if (['choose', 'shoot', 'path', 'bowling'].indexOf(G.type) < 0 || !G.rounds) return;
+      G.rounds.forEach(r => { if (!r || !r.opts || r.opts.length < 2 || !r.opts.some(o => o.ok) || !r.say) return; const k = JSON.stringify([r.prompt, r.say, r.opts.filter(o => o.ok).map(o => o.t || o.pic)]); if (seen[k]) return; seen[k] = 1; out.push(r); });
+    });
+    return (this._bossPool = out);
+  }
+  bossDef() { const P = this.bossPool(); return { type: 'choose', boss: true, icon: '⚔️', title: 'הַחַיְזָר מִתְקָרֵב', desc: '', intro: ['__boss_intro'], rounds: P, n: Math.min(10, P.length) }; }
+  gdef(i) { return i === BOSS ? this.bossDef() : LV.games[i]; }
+  bossNeed() { const done = Object.keys(this.m.done || {}).filter(k => k !== '_total' && Number(this.m.done[k]) >= 3).length; return Math.max(0, 3 - done); }   // opens after 3 games with 3+ stars
+  calm() { try { return !!(this.store && this.store.get('calm')); } catch (e) { return false; } }
+  bossTick() {
+    const g = this.m.g;
+    if (!g || !g.boss || this.m.victory || this.m.screen !== 'game') { clearInterval(this.tBoss); return; }
+    // the alien moves only on the child's turn: never while Noga talks, never on the first (practice) question, never in calm mode
+    if (this.paused || g.locked || g.holding || this.state.speaking || g.ri === 0 || this.calm()) return;
+    g.pos -= 0.15 * 100 / g.T;
+    if (g.pos <= 0) this.bossCrash(); else this.up();
+  }
+  bossCrash() {
+    const g = this.m.g; if (!g) return;
+    g.shields -= 1; g.pos = 100; g.crash = Date.now(); this.sfx('bad'); this.buzz([80, 40, 80]);
+    const again = () => { if (this.m.g === g && !this.m.victory) this.prompt(); };
+    if (g.shields <= 0) { g.shields = 3; g.saves = (g.saves || 0) + 1; this.up(); this.say(['__boss_save'], 'friendly', again); }   // never a game over: Noga sends new shields
+    else { this.up(); this.say(['__boss_shield'], 'thinking', again); }
+  }
+  bossWin() {
+    const g = this.m.g; clearInterval(this.tBoss);
+    const stars = Math.max(1, 5 - (g.mistakes || 0)); g.stars = stars; g.improved = false;
+    this.m.victory = true;
+    if (this.store) { try { const B = Object.assign({}, this.store.get('boss') || {}); B[LV.key] = Math.max(stars, B[LV.key] || 0); this.store.set('boss', B); } catch (err) {} }
+    const isNew = this.giveSticker(LV.key + ':boss', '🏆'); this.m.sticker = { emoji: '🏆', isNew };
+    this.sfx('win'); this.up();
+    this.say(['__boss_won'].concat(stars === 5 ? this.withName(LV.common.win) : LV.common.win), 'wow');
+  }
   withName(ids) { return CLIPS.__name ? ['__name'].concat(ids || []) : (ids || []); }
   up() { this.setState({ v: this.state.v + 1 }); }
   muted() { try { return !!(this.store && this.store.get('mute')); } catch (e) { return false; } }
@@ -215,7 +263,7 @@ class Component extends DCLogic {
       const o = g.opts[Number(k) - 1]; if (o && o.i !== g.elim) { e.preventDefault(); this.pickOpt(o); }
     }
   }
-  componentWillUnmount() { window.removeEventListener('noga:pause', this.onPause); window.removeEventListener('noga:resume', this.onResume); window.removeEventListener('noga:hub', this.onHub); window.__nogaScreen = ''; window.dispatchEvent(new CustomEvent('noga:screen', { detail: '' })); window.removeEventListener('keydown', this.onKey); window.removeEventListener('pointerdown', this.onPt, true); clearTimeout(this.tBurst); clearTimeout(this.tGold); clearTimeout(this.tStep); clearTimeout(this.tb1); clearTimeout(this.tb2); clearTimeout(this.tSaved); clearTimeout(this.tv); clearTimeout(this.tHold); clearTimeout(this.tTurn); clearTimeout(this.tIdle); this.stopAudio(); clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); clearTimeout(this.th); clearTimeout(this.th2); }
+  componentWillUnmount() { clearInterval(this.tBoss); window.removeEventListener('noga:pause', this.onPause); window.removeEventListener('noga:resume', this.onResume); window.removeEventListener('noga:hub', this.onHub); window.__nogaScreen = ''; window.dispatchEvent(new CustomEvent('noga:screen', { detail: '' })); window.removeEventListener('keydown', this.onKey); window.removeEventListener('pointerdown', this.onPt, true); clearTimeout(this.tBurst); clearTimeout(this.tGold); clearTimeout(this.tStep); clearTimeout(this.tb1); clearTimeout(this.tb2); clearTimeout(this.tSaved); clearTimeout(this.tv); clearTimeout(this.tHold); clearTimeout(this.tTurn); clearTimeout(this.tIdle); this.stopAudio(); clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); clearTimeout(this.th); clearTimeout(this.th2); }
 
   // ---------------- voice ----------------
   stopAudio() { this.tok++; this.lip = null; clearInterval(this.mi); clearTimeout(this.t3); clearTimeout(this.wd); try { if (this.au) { this.au.onended = null; this.au.onerror = null; this.au.onplaying = null; this.au.pause(); } } catch (e) {} this.vidRun(false); if (this.state.speaking) this.setState({ speaking: false }); }
@@ -324,16 +372,17 @@ class Component extends DCLogic {
 
   // ---------------- navigation ----------------
   allDone() { return LV.games.every((_, i) => this.m.done[i]); }
-  goHub() { clearTimeout(this.t1); Object.assign(this.m, { screen: 'hub', gi: -1, g: null, victory: false, saved: false, album: false, retry: false, drag: null, hand: null }); this.up(); const justSaved = this.justSaved; this.justSaved = false; this.say(justSaved ? LV.common.done : LV.common.pick_game, 'friendly'); }
+  goHub() { clearTimeout(this.t1); clearInterval(this.tBoss); Object.assign(this.m, { screen: 'hub', gi: -1, g: null, victory: false, saved: false, album: false, retry: false, drag: null, hand: null }); this.up(); const justSaved = this.justSaved; this.justSaved = false; this.say(justSaved ? LV.common.done : LV.common.pick_game, 'friendly'); }
   vocabWalk(k) {
-    const G = LV.games[this.m.gi]; if (this.m.screen !== 'vocab' || !G || !G.vocab) return;
+    const G = this.gdef(this.m.gi); if (this.m.screen !== 'vocab' || !G || !G.vocab) return;
     if (k >= G.vocab.length) { this.m.vocabSel = -1; this.up(); return; }
     this.m.vocabSel = k; this.up(); this.say(G.vocab[k].say, 'pointing', () => { this.tv = setTimeout(() => this.vocabWalk(k + 1), 350); });
   }
   openLesson() { Object.assign(this.m, { screen: 'lesson', lessonSel: -1, victory: false }); this.up(); this.say(LV.lesson.intro, 'pointing'); }
   openGame(i, skipVocab) {
-    clearTimeout(this.t1);
-    const G = LV.games[i];
+    clearTimeout(this.t1); clearInterval(this.tBoss);
+    if (i === BOSS && this.bossNeed() > 0) { this.say(['__boss_locked'], 'friendly'); return; }
+    const G = this.gdef(i);
     if (G.vocab && G.vocab.length && !skipVocab && !(this.vocabSeen || {})[i]) {
       // vocabulary page first: Noga names every picture (English, then Hebrew), then the game
       this.vocabSeen = this.vocabSeen || {}; this.vocabSeen[i] = true;
@@ -342,6 +391,7 @@ class Component extends DCLogic {
       return;
     }
     Object.assign(this.m, { screen: 'game', gi: i, g: this.initGame(G), victory: false, retry: false, shake: '', drag: null, hand: null });
+    if (G.boss) { const g = this.m.g; g.boss = true; g.pos = 100; g.shields = 3; g.T = 26; this.tBoss = setInterval(() => this.bossTick(), 150); }
     this.up();
     this.showHand('demo'); this.maybeGold();
     this.hold(); this.say(G.type === 'match' && LV.common.match_tip ? (G.intro || []).concat(LV.common.match_tip) : G.intro, 'pointing', () => this.prompt());
@@ -365,7 +415,7 @@ class Component extends DCLogic {
     const r = this.curRound(); if (!r || !r.say) { this.release(); return; }
     let ids = r.say;
     // bowling reuses another game's questions: drop that game's own instruction ("יוֹרִים בַּ...") — there is nothing to shoot
-    if (g.type === 'bowling') { const f = ids.filter(i => !/^יוֹרִים/.test((CLIPS[i] || [''])[0])); if (f.length) ids = f; }
+    if (g.type === 'bowling' || g.boss) { const f = ids.filter(i => !/^יוֹרִים/.test((CLIPS[i] || [''])[0])); if (f.length) ids = f; }
     const prev = g.ri > 0 && g.rounds ? g.rounds[g.ri - 1] : null;
     if (prev && prev.say && ids.length > 1 && prev.say[0] === ids[0]) ids = ids.slice(1); // same question frame as last time: straight to the content
     else if (prev && prev.say && ids.length === 1 && prev.say.length === 1 && prev.say[0] === ids[0]) { this.release(); return; }   // only the same instruction again: skip it
@@ -439,6 +489,7 @@ class Component extends DCLogic {
     this.sfx(g.type === 'bowling' ? 'strike' : g.type === 'shoot' ? 'boom' : (LV.games[this.m.gi] || {}).skin === 'balloon' ? 'pop' : 'good', g.combo);
     if (comboHit) { this.sfx('combo'); this.buzz([30, 40, 30]); } else this.buzz(30);
     this.burst(comboHit ? 'combo' : 'good');
+    if (g.boss) { g.pos = Math.min(100, g.pos + 30); g.zap = Date.now(); if (g.combo >= 3) g.T = Math.max(14, g.T * 0.88); }
     g.alienHit = Date.now(); clearTimeout(this.tAl); this.tAl = setTimeout(() => { g.alienHit = 0; this.up(); }, 900);
     this.up();
     // praise: a short word most of the time, a full sentence after a combo or every 3rd answer
@@ -462,6 +513,7 @@ class Component extends DCLogic {
   estimate(ids) { return (ids || []).reduce((s, i) => s + (CLIPS[i] && CLIPS[i][2] ? CLIPS[i][1].length / 10 : 0.6), 0); }
   bad(key) {
     clearTimeout(this.tIdle); const g = this.m.g;
+    if (g && g.boss) { g.pos = Math.max(4, g.pos - 12); g.T = Math.min(40, g.T * 1.25); }   // a wrong answer: one step closer, and the alien slows down
     if (g) { g.combo = 0; g.alienLaugh = Date.now(); clearTimeout(this.tAl2); this.tAl2 = setTimeout(() => { g.alienLaugh = 0; this.up(); }, 900); }
     if (g && g.type === 'catch' && g.rw >= 1) g.frozen = true;
     this.m.shake = key; this.sfx('bad');
@@ -514,6 +566,7 @@ class Component extends DCLogic {
   }
   win() {
     if (!this.m.g) return;
+    if (this.m.g.boss) { this.bossWin(); return; }
     const g = this.m.g, stars = Math.max(1, 5 - (g.mistakes || 0));
     g.stars = stars; g.improved = stars > (this.m.done[this.m.gi] || 0);
     const wasAll = this.allDone();
@@ -693,7 +746,7 @@ class Component extends DCLogic {
 
   // ---------------- render ----------------
   renderVals() {
-    const S = Object.assign({}, this.state, this.m), G = S.gi >= 0 ? LV.games[S.gi] : null, g = S.g;
+    const S = Object.assign({}, this.state, this.m), G = S.gi >= 0 ? this.gdef(S.gi) : null, g = S.g;
     const hasVid = typeof NOGA_VIDEO !== 'undefined' && !!NOGA_VIDEO;
     const nogaImg = (S.talking && (!hasVid || S.lipless)) ? IMGS.talk[S.mouth % 2 ? 1 : 0] : (IMGS[S.img] || IMGS.pointing);
     const v = Object.assign(DEFAULTS(), {
@@ -714,7 +767,7 @@ class Component extends DCLogic {
       savedShow: !!this.m.saved, savedDone: () => this.savedDone(),  invite: !!(this.m.saved && this.m.invite), noInvite: !(this.m.saved && this.m.invite), storyText: this.m.soon ? 'כׇּל הַכָּבוֹד! סִיַּמְתֶּם אֶת הַכּוֹכָבִים שֶׁפְּתוּחִים כָּרֶגַע. הַכּוֹכָבִים הַבָּאִים יַגִּיעוּ בְּקָרוֹב!' : (LV.storyText || ''),
       burst: this.m.burst || [],
       comboShow: !!(g && g.combo >= 3 && S.screen === 'game' && !this.m.victory), comboText: g ? '🔥 רֶצֶף ' + (g.combo || 0) + '!' : '',
-      alienShow: S.screen === 'game' && !!g && g.type !== 'bowling' && !this.m.victory,
+      alienShow: S.screen === 'game' && !!g && g.type !== 'bowling' && !g.boss && !this.m.victory,
       alienMiniImg: g && g.alienHit ? LV.alienDizzy : LV.alienImg,
       alienMiniStyle: g ? ('position: absolute; left: 44px; top: ' + (150 + (g.step || 0) * 105) + 'px; width: ' + Math.round(116 - Math.min(1, g.score / Math.max(1, g.n)) * 52) + 'px; z-index: 4; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5)); transition: top .9s ease, width .5s ease, transform .3s ease; transform: ' + (g.alienLaugh ? 'rotate(-10deg) scale(1.12)' : g.alienHit ? 'rotate(14deg) scale(0.82)' : 'rotate(0)')) : '',
       planetMiniStyle: 'position: absolute; left: 52px; top: 560px; width: 90px; height: 90px; object-fit: contain; z-index: 3; opacity: 0.95; filter: drop-shadow(0 0 18px rgba(255,200,61,0.45))',
@@ -734,6 +787,25 @@ class Component extends DCLogic {
     v.hubGames = LV.games.map((G2, i) => ({ gid: 'g' + i, icon: G2.icon, title: iso(G2.title), desc: G2.desc, open: () => this.openGame(i),
       badge: S.done[i] ? '\u2066' + '★'.repeat(S.done[i]) + '☆'.repeat(5 - S.done[i]) + '\u2069' : (i === nextI ? 'לְשַׂחֵק ⭐' : 'לְשַׂחֵק'), badgeStyle: 'align-self: center; border-radius: 999px; padding: 4px 14px; font-size: 16px; font-weight: 700; ' + (S.done[i] ? 'background: #34D1BF; color: #17123D' : 'background: #FFC83D; color: #17123D'),
       cardStyle: 'border: 3px solid ' + (S.done[i] ? '#34D1BF' : TILE_COLORS[i % TILE_COLORS.length]) + '; box-shadow: 0 0 18px ' + (S.done[i] ? 'rgba(52,209,191,0.45)' : 'rgba(0,0,0,0.25)') + (i === nextI ? '; animation: glowPulse 1.6s ease-in-out infinite' : '') }));
+    // ---- boss: hub button and the battle lane ----
+    const pool = this.bossPool(), need = this.bossNeed();
+    let best = 0; try { best = ((this.store && this.store.get('boss')) || {})[LV.key] || 0; } catch (err) {}
+    v.bossCard = S.screen === 'hub' && pool.length >= 6 ? [{ open: () => this.openGame(BOSS),
+      sub: need > 0 ? '🔒 עוֹד ' + need + (need === 1 ? ' מִשְׂחָק' : ' מִשְׂחָקִים') + ' בַּכּוֹכָב' : best ? '🏆 ' + '★'.repeat(best) + '☆'.repeat(5 - best) : 'מְגִנִּים עַל הַחֲלָלִית!',
+      style: 'position: absolute; left: 50%; top: 470px; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; padding: 8px 30px 8px 18px; border-radius: 999px; border: 3px solid ' + (need > 0 ? 'rgba(201,195,242,0.5)' : '#FF7A59') + '; background: ' + (need > 0 ? 'rgba(36,28,92,0.85)' : 'linear-gradient(90deg, #5B1F3A, #2A1660)') + '; color: #FFFFFF; cursor: pointer; font-family: Fredoka, Rubik, sans-serif; z-index: 3' + (need > 0 ? '; opacity: 0.8' : '; animation: glowPulse 1.6s ease-in-out infinite') }] : [];
+    if (g && g.boss && S.screen === 'game' && !this.m.victory) {
+      const ax = 170 + (g.pos / 100) * 640, now = Date.now(), zap = g.zap && now - g.zap < 650, crash = g.crash && now - g.crash < 700;
+      v.bossLane = [{
+        alienImg: zap ? LV.alienDizzy : LV.alienImg, shipImg: LV.shipImg,
+        alienStyle: 'position: absolute; left: ' + Math.round(ax) + 'px; top: -34px; width: 104px; height: 104px; object-fit: contain; transition: left ' + (zap ? '.35s ease-out' : '.15s linear') + '; filter: drop-shadow(0 6px 10px rgba(0,0,0,.6)); transform: ' + (zap ? 'rotate(18deg) scale(.86)' : 'none'),
+        hpStyle: 'position: absolute; left: ' + Math.round(ax + 6) + 'px; top: -46px; width: 92px; height: 10px; border-radius: 6px; background: rgba(0,0,0,.5); overflow: hidden; transition: left ' + (zap ? '.35s ease-out' : '.15s linear'),
+        hpFill: 'display: block; height: 100%; width: ' + Math.round(100 * Math.max(0, g.n - g.score) / Math.max(1, g.n)) + '%; background: linear-gradient(90deg, #FF7A59, #FFC83D); transition: width .3s',
+        laser: zap ? 'position: absolute; left: 120px; top: 30px; height: 6px; width: ' + Math.round(ax - 110) + 'px; border-radius: 3px; background: linear-gradient(90deg, #FFF3A6, #FFC83D); box-shadow: 0 0 14px #FFC83D; animation: hide .65s forwards' : 'display: none',
+        shipStyle: 'position: absolute; left: 8px; top: -18px; width: 120px; height: 78px; object-fit: contain' + (crash ? '; animation: shake .5s' : ''),
+        shields: [0, 1, 2].map(i => ({ t: i < g.shields ? '🛡️' : '💥', style: 'font-size: 26px; opacity: ' + (i < g.shields ? 1 : 0.45) })),
+        calm: this.calm() ? '😌 בְּלִי תְּנוּעָה' : '',
+      }];
+    }
     // ---- lesson ----
     const L = LV.lesson;
     if (S.screen === 'lesson') {

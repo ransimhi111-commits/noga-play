@@ -109,6 +109,7 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
           </button>
         </sc-for>
       </div>
+      <sc-for list="{{bossCard}}" as="bc" hint-placeholder-count="0"><button onClick="{{bc.open}}" data-hub="boss" style="{{bc.style}}"><img src="{{alienImg}}" alt="" class="bob" style="width: 84px; height: 84px; object-fit: contain"><span style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px"><span style="font-size: 28px; font-weight: 700">⚔️ הַחַיְזָר מִתְקָרֵב</span><span style="font-size: 17px; color: #FFE7A3">{{bc.sub}}</span></span></button></sc-for>
       <div style="position: absolute; left: 40px; bottom: 26px; display: flex; align-items: flex-end; gap: 18px">
         <div style="position: relative; width: 170px; height: 170px">
           <img src="{{planetImg}}" alt="הכוכב של השלב" style="width: 170px; height: 170px; object-fit: contain; filter: drop-shadow(0 0 30px rgba(255,200,61,0.35))">
@@ -203,6 +204,16 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
     </div>
     <sc-if value="{{is_choose}}" hint-placeholder-val="{{false}}">
       <span data-kind="choose" style="display: none"></span>
+      <sc-for list="{{bossLane}}" as="bl" hint-placeholder-count="0">
+        <div aria-hidden="true" style="position: absolute; left: 40px; top: 640px; width: 880px; height: 56px; border-radius: 28px; background: linear-gradient(90deg, rgba(52,209,191,0.25), rgba(255,122,89,0.25)); border: 2px dashed rgba(201,195,242,0.45); z-index: 6; pointer-events: none">
+          <img src="{{bl.shipImg}}" alt="" style="{{bl.shipStyle}}">
+          <div style="position: absolute; left: 130px; top: 12px; display: flex; gap: 4px"><sc-for list="{{bl.shields}}" as="sh" hint-placeholder-count="3"><span style="{{sh.style}}">{{sh.t}}</span></sc-for></div>
+          <div style="{{bl.laser}}"></div>
+          <div style="{{bl.hpStyle}}"><span style="{{bl.hpFill}}"></span></div>
+          <img src="{{bl.alienImg}}" alt="" style="{{bl.alienStyle}}">
+          <span style="position: absolute; right: 18px; top: 14px; font-size: 16px; color: #C9C3F2">{{bl.calm}}</span>
+        </div>
+      </sc-for>
       <div style="position: absolute; top: 92px; left: 36px; right: 36px; height: 520px; display: flex; flex-direction: column; justify-content: space-evenly; gap: 14px">
         <sc-if value="{{hasStory}}" hint-placeholder-val="{{false}}">
           <div style="align-self: center; max-width: 1040px; padding: 12px 22px; border-radius: 22px; background: rgba(255,255,255,0.95); color: #17123D; display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: center">
