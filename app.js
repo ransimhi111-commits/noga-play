@@ -16,7 +16,7 @@
   function merge(into, from) {
     if (!from) return into;
     const fr = from.resetAt || 0, ir = into.resetAt || 0;
-    if (fr > ir) { ['done', 'opened', 'help', 'stickers', 'intake', 'time', 'seenStory', 'resetAt'].forEach(f => { into[f] = from[f]; }); into.done = into.done || {}; return into; }   // the other copy was reset later
+    if (fr > ir) { ['done', 'opened', 'help', 'stickers', 'intake', 'time', 'seenStory', 'resetAt', 'last'].forEach(f => { into[f] = from[f]; }); into.done = into.done || {}; return into; }   // the other copy was reset later
     if (ir > fr) return into;
     for (const k in from.done || {}) { const a = into.done[k] || (into.done[k] = {}), b = from.done[k]; for (const g in b) a[g] = g === '_total' ? b[g] : Math.max(Number(a[g]) || 0, Number(b[g]) || 0); }
     ['opened', 'stickers', 'help'].forEach(f => { if (from[f]) into[f] = Object.assign({}, from[f], into[f] || {}); });
@@ -61,7 +61,7 @@
     get(k) { return S[k]; }, set(k, v) { S[k] = v; save(S); },
     // every mistake of the last round of each game, the practice question included, for the parents' report
     noteHelp(k, gi, n) { S.help = Object.assign({}, S.help); S.help[k] = Object.assign({}, S.help[k], { [gi]: n }); save(S); },
-    reset() { S.done = {}; S.seenStory = false; S.time = 0; S.intake = null; S.opened = {}; S.help = {}; S.stickers = {}; S.resetAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} },
+    reset() { S.done = {}; S.seenStory = false; S.last = null; S.time = 0; S.intake = null; S.opened = {}; S.help = {}; S.stickers = {}; S.resetAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} },
     addTime(sec) { S.time = (S.time || 0) + sec; S.lastPlay = Date.now(); save(S); },
   };
   // planets opened under the old rule (any 5 games) stay open for children who already reached them
@@ -216,13 +216,21 @@
     const url = fb.wa ? 'https://wa.me/' + fb.wa + '?text=' + encodeURIComponent(body) : 'mailto:' + (fb.mail || '') + '?subject=' + encodeURIComponent('משוב על כוכב נוגה') + '&body=' + encodeURIComponent(body);
     try { window.open(url, '_blank'); } catch (e) { location.href = url; }
   }
+  // where the child stopped, in words for the start screen
+  const SUBJ = { Heb: 'עִבְרִית', Math: 'חֶשְׁבּוֹן', Eng: 'אַנְגְּלִית' }, MAPS = { Map: 'Heb', MapMath: 'Math', MapEng: 'Eng' };
+  function whereLabel(n) { const m = /^(Heb|Math|Eng)L(\d)$/.exec(n || ''); if (m) return SUBJ[m[1]] + ' · כּוֹכָב ' + m[2]; if (MAPS[n]) return 'הַמַּפָּה שֶׁל ' + SUBJ[MAPS[n]]; return 'גֶּשֶׁר הַחֲלָלִית'; }
+  // ask the browser not to clear Noga's saved progress when space runs low (Chrome/Android; harmless elsewhere)
+  function keepStorage() { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {} }
+  // in-app browsers (Facebook, Instagram, Line, Android web views) may keep their own short-lived storage
+  const IN_APP = /FBAN|FBAV|FB_IAB|Instagram|Line\/|; wv\)|WhatsApp/i.test(navigator.userAgent || '');
   const STARS = Array.from({ length: 46 }, (_, i) => [(i * 37) % 100, (i * 53 + 11) % 100, 2 + (i % 3), (i % 7) * 0.35]);
   function App() {
     const scale = useFit();
     const hashName = (location.hash || '').slice(1);
     const initial = hashName && store.isOpen(hashName) ? hashName : '';
     const [started, setStarted] = R.useState(false);
-    const [name, setName] = R.useState(initial || (S.seenStory ? CFG.home : CFG.start));
+    // coming back (later today or tomorrow) opens where the child stopped: the last planet, map or home screen; a parent reset starts over
+    const [name, setName] = R.useState(initial || (S.last && store.isOpen(S.last) ? S.last : (S.seenStory ? CFG.home : CFG.start)));
     const [inGame, setInGame] = R.useState(false);      // a level is showing a game or the lesson (from the board)
     const [paused, setPaused] = R.useState(false);
     const [breakAsk, setBreakAsk] = R.useState(false);
@@ -261,6 +269,7 @@
       window.addEventListener('noga:screen', f); return () => window.removeEventListener('noga:screen', f);
     }, []);
     R.useEffect(() => { if (!/^(Heb|Math|Eng)L\d$/.test(name)) setInGame(false); setPaused(false); }, [name]);
+    R.useEffect(() => { if (started && /^(Main|Map|MapMath|MapEng|(Heb|Math|Eng)L\d)$/.test(name) && S.last !== name) { S.last = name; save(S); } }, [started, name]);
     // the pilot card opens once, the first time the child reaches the home screen (after the story and the pilot choice)
     R.useEffect(() => { if (started && name === CFG.home && !S.kid) openKid(); }, [started, name]);
     R.useEffect(() => {
@@ -344,7 +353,9 @@
         h('img', { src: 'assets/ship.webp', alt: '', className: 'deco deco-ship', style: { left: '22%', bottom: '32%', width: '12vw', maxWidth: 150 } }),
         h('img', { src: 'assets/noga_friendly.webp', alt: 'נוגה', className: 'start-noga' }),
         h('h1', null, 'לְהַצִּיל אֶת כּוֹכַב נֹגַהּ'),
-        h('button', { className: 'start-btn', onClick: () => { unlockAudio(); goFullscreen(); setStarted(true); history.replaceState({ b: name }, '', '#' + name); } }, '▶  מַתְחִילִים'),
+        (S.seenStory || S.last) ? h('div', { className: 'start-where' }, 'מַמְשִׁיכִים מֵאֵיפֹה שֶׁעָצַרְנוּ: ' + whereLabel(name)) : null,
+        h('button', { className: 'start-btn', onClick: () => { unlockAudio(); goFullscreen(); keepStorage(); setStarted(true); history.replaceState({ b: name }, '', '#' + name); } }, (S.seenStory || S.last) ? '▶  מַמְשִׁיכִים' : '▶  מַתְחִילִים'),
+        IN_APP ? h('div', { className: 'start-inapp' }, 'כְּדֵי שֶׁהַהִתְקַדְּמוּת תִּשָּׁמֵר, פִּתְחוּ אֶת הָאַפְּלִיקַצְיָה בַּדַּפְדְּפָן (Chrome אוֹ Safari) וְלֹא מִתּוֹךְ וָואטְסְאַפּ אוֹ פֵיְיסְבּוּק.') : null,
         h('div', { className: 'start-parents' },
           h('button', { className: 'pbtn', onClick: () => go('Parent') }, '👨‍👩‍👧 אזור הורים'),
           !S.intake ? h('button', { className: 'pbtn pbtn-gold', onClick: () => go('Intake') }, '📝 שאלון לבחירת רמה (2 דק׳)') : null,

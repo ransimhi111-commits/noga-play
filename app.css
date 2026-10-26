@@ -95,3 +95,7 @@ button, a { touch-action: manipulation; }
 .kid-sp { font-size: 17px; }
 .kid-many { min-height: 120px; display: flex; align-items: center; justify-content: center; font: 600 22px Rubik, sans-serif; color: #C9C3F2; text-align: center; }
 @media (max-height: 420px) { .kid { padding: 8px 14px 10px; gap: 7px; } .kid-title { font-size: 21px; } .kid-gb { min-height: 46px; font-size: 18px; } .kid-ge { font-size: 22px; } .kid-name { min-height: 46px; font-size: 26px; } .kid-k { min-height: 40px; font-size: 21px; } .kid-ok { min-height: 44px; font-size: 19px; } }
+
+.start-where { font: 600 20px Rubik, sans-serif; color: #C9C3F2; margin-top: -8px; }
+.start-inapp { max-width: 520px; text-align: center; font: 500 15px Rubik, sans-serif; color: #FFC83D; background: rgba(36,28,92,0.9); border-radius: 14px; padding: 8px 14px; }
+@media (max-height: 420px) { .start-where { font-size: 16px; margin-top: -4px; } }
