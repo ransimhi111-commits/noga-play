@@ -337,7 +337,14 @@
     }, []);
     const [tries, setTries] = R.useState(0);
     R.useEffect(() => { let alive = true; setComp(null); setErr(''); getBoard(name).then(C => { if (alive) setComp(() => C); }).catch(e => { if (alive) { console.warn(e); setErr(navigator.onLine === false ? 'offline' : 'load'); } }); return () => { alive = false; }; }, [name, tries]);
-    const stage = h('div', { id: 'stage', style: { width: W, height: H, transform: 'scale(' + scale + ')', transformOrigin: 'top left', position: 'absolute', left: RAIL + Math.max(0, (window.innerWidth - RAIL - W * scale) / 2), top: Math.max(0, (window.innerHeight - H * scale) / 2), overflow: 'hidden', background: '#0E0A2E' } },
+    // the space background continues past the game's edges on wide screens (phones held sideways, laptops):
+    // near the game it is the same picture at the same scale (bg.jpg 1024×572, 'cover' on 1180×820), farther out a soft blur
+    const sw = W * scale, sh = H * scale, sl = RAIL + Math.max(0, (window.innerWidth - RAIL - sw) / 2), stp = Math.max(0, (window.innerHeight - sh) / 2);
+    const bgW = H * 1024 / 572 * scale;
+    const backdrop = h('div', { className: 'backdrop', 'aria-hidden': 'true' },
+      h('div', { className: 'backdrop-far' }),
+      h('div', { className: 'backdrop-near', style: { left: sl + sw / 2 - bgW / 2, top: stp, width: bgW, height: sh } }));
+    const stage = h('div', { id: 'stage', className: (window.innerWidth - RAIL - sw > 40 || window.innerHeight - sh > 40) ? 'stage-framed' : '', style: { width: W, height: H, transform: 'scale(' + scale + ')', transformOrigin: 'top left', position: 'absolute', left: RAIL + Math.max(0, (window.innerWidth - RAIL - W * scale) / 2), top: Math.max(0, (window.innerHeight - H * scale) / 2), overflow: 'hidden', background: 'transparent' } },
       started && Comp && !(name === 'Parent' && !parentOk) ? h(Comp, { key: name + ':' + kidV, nav, store }) : null,
       started && !Comp && !err ? h('div', { className: 'loading' }, h('div', { className: 'spinner' }), 'טוֹעֲנִים…') : null,
       null,
@@ -397,7 +404,7 @@
             h('button', { className: 'kid-del', 'aria-label': 'מחיקת אות', onClick: kidBack }, '⌫')),
           h('div', { className: 'kid-kb' }, KB.map(c => h('button', { key: c, className: 'kid-k' + (c === ' ' ? ' kid-sp' : ''), 'aria-label': c === ' ' ? 'רווח' : c, onClick: () => kidKey(c) }, c === ' ' ? 'רֶוַח' : c)))))) : null;
     const pauseBtn = started && inGame && !paused && !breakAsk ? h('button', { className: 'pause-fab', 'aria-label': 'הַפְסָקָה', onClick: pause }, '⏸') : null;
-    return h(R.Fragment, null, stage, pauseBtn, menuOv, guideOv, pauseOv, breakOv, errOv, gateOv, kidOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
+    return h(R.Fragment, null, backdrop, stage, pauseBtn, menuOv, guideOv, pauseOv, breakOv, errOv, gateOv, kidOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
   }
   RD.createRoot(document.getElementById('root')).render(h(App));
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
