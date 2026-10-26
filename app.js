@@ -25,6 +25,20 @@
   function save(s) { try { merge(s, JSON.parse(localStorage.getItem(KEY))); localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
   const S = Object.assign({ done: {}, seenStory: false }, load());
   window.addEventListener('storage', (e) => { if (e.key === KEY) { try { merge(S, JSON.parse(e.newValue)); } catch (err) {} } });
+
+  // ------------------------------------------------------------------ pilot card: the child's name, and boy / girl / several children
+  // names/names.json = the 500 most common first names (CBS, born 2019–2020) with the pronunciation Noga records;
+  // names/avail.json = ids whose recording is already in names/<id>.mp3. The name stays on this device only.
+  const FIN = { 'כ': 'ך', 'מ': 'ם', 'נ': 'ן', 'פ': 'ף', 'צ': 'ץ' }, UNFIN = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
+  const normName = s => String(s || '').replace(/[֑-ׇ\s\-־'׳"״]/g, '').replace(/[ךםןףץ]/g, c => UNFIN[c]);
+  const finalize = s => String(s || '').replace(/[ךםןףץ]/g, c => UNFIN[c]).replace(/[כמנפצ](?=$|\s)/g, c => FIN[c]);
+  let NAMES = null, NAME_AUDIO = [];
+  function kidFor(name, g) { const n = NAMES && name ? NAMES[normName(name)] : null; return { name: name || '', g: g || '', nid: n ? n[1] : null, audio: !!(n && NAME_AUDIO.indexOf(n[1]) >= 0) }; }
+  const namesReady = Promise.all([
+    fetch('names/names.json').then(r => r.json()).then(j => { NAMES = {}; (j.names || []).forEach(n => { if (!NAMES[n[0]]) NAMES[n[0]] = n; }); }).catch(() => {}),
+    fetch('names/avail.json').then(r => r.json()).then(a => { NAME_AUDIO = Array.isArray(a) ? a : []; }).catch(() => {})
+  ]).then(() => { if (S.kid) { const k = kidFor(S.kid.name, S.kid.g); if (k.nid !== S.kid.nid || k.audio !== S.kid.audio) { S.kid = k; save(S); } } });
+  const KB = 'אבגדהוזחטיכלמנסעפצקרשת'.split('').concat(["'", ' ']);
   const PASS_STARS = 3;   // a game counts toward opening the next planet from 3 stars (random tapping ends with 1–2)
   const store = {
     getDone(k) { return S.done[k] || {}; },
@@ -220,6 +234,17 @@
     const [keepPortrait, setKeepPortrait] = R.useState(false);
     const [menu, setMenu] = R.useState(false);
     const [guide, setGuide] = R.useState(false);
+    const [kidOpen, setKidOpen] = R.useState(false);
+    const [kidV, setKidV] = R.useState(0);
+    const [kName, setKName] = R.useState('');
+    const [kG, setKG] = R.useState('');
+    const kRef = R.useRef({ n: '', g: '' });   // the latest name and choice, also for key handlers set up before a re-render
+    const openKid = () => { setMenu(false); const n = (S.kid && S.kid.name) || '', g = (S.kid && S.kid.g) || ''; kRef.current = { n, g }; setKName(n); setKG(g); setKidOpen(true); };
+    const kidDone = () => { const kName = kRef.current.n, kG = kRef.current.g; if (!kG || (kG !== 'p' && !kName.trim())) return;   // name and boy / girl are required (or 'several children')
+      namesReady.then(() => { S.kid = kidFor(kG === 'p' ? '' : finalize(kName.trim()), kG); S.kidSkip = 0; save(S); setKidOpen(false); setKidV(v => v + 1); }); };
+    const setKN = (t) => { kRef.current.n = t; setKName(t); };
+    const kidKey = (c) => setKN((kRef.current.n.replace(/[ךםןףץ]/g, x => UNFIN[x]) + c).replace(/^\s+/, '').replace(/\s\s+/g, ' ').slice(0, 14));
+    const kidBack = () => setKN(kRef.current.n.slice(0, -1));
     // parent gate: a grown-up question before the parent area (progress reset, open all levels); valid for 15 minutes
     const [parentOk, setParentOk] = R.useState(() => { try { return Number(sessionStorage.getItem('noga_gate') || 0) > Date.now(); } catch (e) { return false; } });
     const newQ = () => { const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4); return { a, b }; };
@@ -236,6 +261,13 @@
       window.addEventListener('noga:screen', f); return () => window.removeEventListener('noga:screen', f);
     }, []);
     R.useEffect(() => { if (!/^(Heb|Math|Eng)L\d$/.test(name)) setInGame(false); setPaused(false); }, [name]);
+    // the pilot card opens once, the first time the child reaches the home screen (after the story and the pilot choice)
+    R.useEffect(() => { if (started && name === CFG.home && !S.kid) openKid(); }, [started, name]);
+    R.useEffect(() => {
+      if (!kidOpen) return;
+      const f = (e) => { if (/^[א-ת' ]$/.test(e.key)) { e.preventDefault(); kidKey(e.key); } else if (e.key === 'Backspace') { e.preventDefault(); kidBack(); } else if (e.key === 'Enter') { e.preventDefault(); kidDone(); } };
+      window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f);
+    }, [kidOpen, kG, kName]);
     const pause = () => { setMenu(false); setPaused(true); window.dispatchEvent(new CustomEvent('noga:pause')); };
     const resume = () => { setPaused(false); window.dispatchEvent(new CustomEvent('noga:resume')); };
     const toHub = () => { setPaused(false); window.dispatchEvent(new CustomEvent('noga:hub')); };
@@ -273,6 +305,7 @@
       menu ? h('div', { className: 'menu' },
         h('button', { onClick: () => go(CFG.home) }, '🏠 מסך הבית'),
         h('button', { onClick: () => { setMenu(false); setStarted(false); history.pushState({ b: 'Start' }, '', '#'); } }, '▶ מסך הפתיחה'),
+        h('button', { onClick: openKid }, '🧑‍🚀 כרטיס טייס: שם, ילד או ילדה'),
         h('button', { onClick: () => go('Parent') }, '👨‍👩‍👧 אזור הורים'),
         h('button', { onClick: () => { setMenu(false); setGuide(true); } }, '❓ איך משתמשים'),
         h('button', { className: 'menu-fb', onClick: () => { setMenu(false); sendFeedback(); } }, '💬 שלחו לרן משוב'),
@@ -296,7 +329,7 @@
     const [tries, setTries] = R.useState(0);
     R.useEffect(() => { let alive = true; setComp(null); setErr(''); getBoard(name).then(C => { if (alive) setComp(() => C); }).catch(e => { if (alive) { console.warn(e); setErr(navigator.onLine === false ? 'offline' : 'load'); } }); return () => { alive = false; }; }, [name, tries]);
     const stage = h('div', { id: 'stage', style: { width: W, height: H, transform: 'scale(' + scale + ')', transformOrigin: 'top left', position: 'absolute', left: RAIL + Math.max(0, (window.innerWidth - RAIL - W * scale) / 2), top: Math.max(0, (window.innerHeight - H * scale) / 2), overflow: 'hidden', background: '#0E0A2E' } },
-      started && Comp && !(name === 'Parent' && !parentOk) ? h(Comp, { key: name, nav, store }) : null,
+      started && Comp && !(name === 'Parent' && !parentOk) ? h(Comp, { key: name + ':' + kidV, nav, store }) : null,
       started && !Comp && !err ? h('div', { className: 'loading' }, h('div', { className: 'spinner' }), 'טוֹעֲנִים…') : null,
       null,
       !started ? h('div', { className: 'start' },
@@ -339,8 +372,21 @@
         h('div', { style: { display: 'flex', gap: 16 } },
           h('button', { className: 'big-btn', onClick: () => { delete boards[name]; setTries(t => t + 1); } }, '↻ לְנַסּוֹת שׁוּב'),
           h('button', { className: 'big-btn big-btn-2', onClick: () => go(CFG.home) }, '🏠 הַבַּיְתָה')))) : null;
+    const kidOv = kidOpen ? h('div', { className: 'ov kid-ov' },
+      h('div', { className: 'kid', role: 'dialog', 'aria-label': 'כרטיס טייס' },
+        h('div', { className: 'kid-head' },
+          h('span', { className: 'kid-title' }, '🧑‍🚀 כַּרְטִיס טַיָּס'),
+          h('div', { className: 'kid-acts' },
+            h('button', { className: 'big-btn kid-ok', disabled: !kG || (kG !== 'p' && !kName.trim()), onClick: kidDone }, '✓ מוּכָן'))),
+        h('div', { className: 'kid-g', role: 'radiogroup', 'aria-label': 'מי משחק' }, [['m', '👦', 'יֶלֶד'], ['f', '👧', 'יַלְדָּה'], ['p', '👫', 'כַּמָּה יְלָדִים']].map(o =>
+          h('button', { key: o[0], role: 'radio', 'aria-checked': kG === o[0] ? 'true' : 'false', className: 'kid-gb' + (kG === o[0] ? ' on' : ''), onClick: () => { kRef.current.g = o[0]; setKG(o[0]); } }, h('span', { className: 'kid-ge', 'aria-hidden': 'true' }, o[1]), o[2]))),
+        kG === 'p' ? h('div', { className: 'kid-many' }, 'נוֹגָה תְּדַבֵּר אֶל כֻּלְּכֶם יַחַד.') : h(R.Fragment, null,
+          h('div', { className: 'kid-row' },
+            h('div', { className: 'kid-name', 'aria-live': 'polite' }, kName ? finalize(kName) : h('span', { className: 'kid-ph' }, 'כּוֹתְבִים כָּאן אֶת הַשֵּׁם')),
+            h('button', { className: 'kid-del', 'aria-label': 'מחיקת אות', onClick: kidBack }, '⌫')),
+          h('div', { className: 'kid-kb' }, KB.map(c => h('button', { key: c, className: 'kid-k' + (c === ' ' ? ' kid-sp' : ''), 'aria-label': c === ' ' ? 'רווח' : c, onClick: () => kidKey(c) }, c === ' ' ? 'רֶוַח' : c)))))) : null;
     const pauseBtn = started && inGame && !paused && !breakAsk ? h('button', { className: 'pause-fab', 'aria-label': 'הַפְסָקָה', onClick: pause }, '⏸') : null;
-    return h(R.Fragment, null, stage, pauseBtn, menuOv, guideOv, pauseOv, breakOv, errOv, gateOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
+    return h(R.Fragment, null, stage, pauseBtn, menuOv, guideOv, pauseOv, breakOv, errOv, gateOv, kidOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
   }
   RD.createRoot(document.getElementById('root')).render(h(App));
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -58,9 +58,9 @@ class Component extends DCLogic {
     let parts = 0; const dots = []; ['Heb', 'Math', 'Eng'].forEach(p => { for (let i = 1; i <= 7; i++) { const c = st ? st.isComplete(p + 'L' + i) : false; if (c) parts++; dots.push({ s: 'width: 12px; height: 12px; border-radius: 50%; background: ' + (c ? '#FFC83D' : 'rgba(255,255,255,0.18)') + '; box-shadow: ' + (c ? '0 0 8px #FFC83D' : 'none') }); } });
     const stk = st ? (st.get('stickers') || {}) : {};
     let stars = 0; if (st) ['Heb', 'Math', 'Eng'].forEach(p => { for (let i = 1; i <= 7; i++) { const d = st.getDone(p + 'L' + i); for (const k in d) if (k !== '_total') stars += Number(d[k]) || 0; } });
-    const pilot = st ? st.get('pilot') : '';
+    const pilot = st ? st.get('pilot') : ''; const kid = st ? st.get('kid') : null;
     return { nogaGlow: this.glow(), nogaImg: this.frame(), speak: go, playHint: (this.state.heard || this.state.playing) ? [] : [{ go: go }], hebLabel: cur('Heb'), mathLabel: cur('Math'), engLabel: cur('Eng'),
-             shipImg: SHIP, shipParts: parts + '/21 חֲלָקִים', shipDots: dots, stickerCount: String(Object.keys(stk).length), pilotLabel: pilot ? '🧑‍🚀 ' + pilot : '🧑‍🚀 טַיָּסִים', starCount: String(stars) };
+             shipImg: SHIP, shipParts: parts + '/21 חֲלָקִים', shipDots: dots, stickerCount: String(Object.keys(stk).length), pilotLabel: kid && kid.name ? '🧑‍🚀 ' + kid.name : pilot ? '🧑‍🚀 ' + pilot : '🧑‍🚀 טַיָּסִים', starCount: String(stars) };
   }
 }
 

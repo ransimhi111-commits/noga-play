@@ -125,7 +125,14 @@ class Component extends DCLogic {
     this.tok = 0; this.lastIds = [];
     this.store = props && props.store ? props.store : null;
     if (this.store) { try { this.m.done = Object.assign({}, this.store.getDone(LV.key) || {}); } catch (err) {} }
+    // pilot card: Noga speaks to a boy or a girl when that recording exists (clip id + '_m' / '_f'), and says the
+    // child's name before a few big moments when the name's recording exists (names/<id>.mp3); otherwise as before
+    let kid = null; try { kid = this.store && this.store.get('kid'); } catch (err) {}
+    this.gender = kid && (kid.g === 'm' || kid.g === 'f') ? kid.g : '';
+    if (kid && kid.audio && kid.nid && kid.name) { CLIPS.__name = [kid.name + '!', '35775310', 1]; CLIP_URLS.__name = 'names/' + kid.nid + '.mp3'; } else delete CLIPS.__name;
   }
+  gv(ids) { const g = this.gender; return g ? ids.map(i => (CLIPS[i + '_' + g] && CLIPS[i + '_' + g][2]) ? i + '_' + g : i) : ids; }
+  withName(ids) { return CLIPS.__name ? ['__name'].concat(ids || []) : (ids || []); }
   up() { this.setState({ v: this.state.v + 1 }); }
   muted() { try { return !!(this.store && this.store.get('mute')); } catch (e) { return false; } }
   sfx(k, step) { sfx(k, this.muted(), step); }
@@ -246,7 +253,7 @@ class Component extends DCLogic {
   }
   textOf(ids) { return iso((ids || []).filter(i => CLIPS[i]).map(i => CLIPS[i][0]).join(' ')); }
   say(ids, img, after) {
-    ids = (ids || []).filter(Boolean);
+    ids = this.gv((ids || []).filter(Boolean));
     this.lastIds = ids;
     this.setState({ says: this.textOf(ids), img: img || this.state.img });
     this.play(ids, after);
@@ -527,11 +534,11 @@ class Component extends DCLogic {
     if (this.justSaved && LV.common.saved) {
       // the planet is saved: 5-second celebration (alien flees), then the regular stars screen
       this.m.saved = true; this.m.victory = false; this.up();
-      this.say((LV.common.saved || []).concat(this.m.soon ? [] : (LV.storyNext || [])), 'clapping');
+      this.say(this.withName((LV.common.saved || []).concat(this.m.soon ? [] : (LV.storyNext || []))), 'clapping');
       clearTimeout(this.tSaved); if (!this.m.invite) this.tSaved = setTimeout(() => this.savedDone(), 9000);   // with an invitation the child chooses
       return;
     }
-    this.say(stars >= 3 ? LV.common.win : LV.common.win_low, 'wow');
+    this.say(stars === 5 ? this.withName(LV.common.win) : stars >= 3 ? LV.common.win : LV.common.win_low, 'wow');
   }
   savedDone() { clearTimeout(this.tSaved); if (!this.m.saved) return; this.m.saved = false; this.m.invite = false; this.m.soon = false; this.m.victory = true; this.up(); const g = this.m.g; if (g) this.say(LV.common.win, 'wow'); }
   again() { this.openGame(this.m.gi); }
