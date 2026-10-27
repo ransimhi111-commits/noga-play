@@ -174,6 +174,7 @@ class Component extends DCLogic {
   bossWin() {
     const g = this.m.g; clearInterval(this.tBoss);
     const stars = Math.max(1, 5 - (g.mistakes || 0)); g.stars = stars; g.improved = false;
+    this.m.coinWin = 10; this.addCoins(10);
     this.m.victory = true;
     if (this.store) { try { const B = Object.assign({}, this.store.get('boss') || {}); B[LV.key] = Math.max(stars, B[LV.key] || 0); this.store.set('boss', B); } catch (err) {} }
     const isNew = this.giveSticker(LV.key + ':boss', '🏆'); this.m.sticker = { emoji: '🏆', isNew };
@@ -238,6 +239,16 @@ class Component extends DCLogic {
     window.addEventListener('noga:pause', this.onPause); window.addEventListener('noga:resume', this.onResume); window.addEventListener('noga:hub', this.onHub);
   }
   componentDidUpdate() { const sc = this.m.screen; if (sc !== window.__nogaScreen) { window.__nogaScreen = sc; window.dispatchEvent(new CustomEvent('noga:screen', { detail: sc })); } }
+  // ---------------- coins: 1 per correct answer, stars as a bonus on victory (spent in the ship shop on the bridge) ----------------
+  coins() { if (this.store) { try { return Number(this.store.get('coins')) || 0; } catch (e) {} } return this.memCoins || 0; }
+  addCoins(n) { if (!n) return; if (this.store) { try { this.store.set('coins', this.coins() + n); return; } catch (e) {} } this.memCoins = (this.memCoins || 0) + n; }
+  shopState() { try { return (this.store && this.store.get('shop')) || {}; } catch (e) { return {}; } }
+  flyCoin() {
+    const pt = this.lastPt || [590, 420]; let tx = 160, ty = 66;
+    try { const root = document.querySelector('.space'), el = document.querySelector('.coinpill'); if (root && el) { const r = root.getBoundingClientRect(), e = el.getBoundingClientRect(); if (r.width) { tx = (e.left + e.width / 2 - r.left) / r.width * 1180; ty = (e.top + e.height / 2 - r.top) / r.height * 820; } } } catch (err) {}
+    this.m.coinFly = [{ style: 'left: ' + Math.round(pt[0]) + 'px; top: ' + Math.round(pt[1]) + 'px; --dx: ' + Math.round(tx - pt[0]) + 'px; --dy: ' + Math.round(ty - pt[1]) + 'px' }];
+    clearTimeout(this.tCoin); this.tCoin = setTimeout(() => { this.m.coinFly = []; this.m.coinBump = Date.now(); this.up(); clearTimeout(this.tCoin2); this.tCoin2 = setTimeout(() => { this.m.coinBump = 0; this.up(); }, 420); }, 820);
+  }
   burst(kind) {
     const pt = this.lastPt || [590, 420]; const n = kind === 'combo' ? 18 : 12; const chars = kind === 'combo' ? ['🔥', '⭐', '✨', '💥'] : ['✨', '⭐', '🎉', '💫'];
     this.m.burst = Array.from({ length: n }, (_, i) => { const a = (i / n) * Math.PI * 2, d = 90 + (i % 3) * 45; return { ch: chars[i % chars.length], style: 'left: ' + pt[0] + 'px; top: ' + pt[1] + 'px; --dx: ' + Math.round(Math.cos(a) * d) + 'px; --dy: ' + Math.round(Math.sin(a) * d - 40) + 'px; animation-delay: ' + (i % 4) * 30 + 'ms; font-size: ' + (22 + (i % 3) * 8) + 'px' }; });
@@ -263,7 +274,7 @@ class Component extends DCLogic {
       const o = g.opts[Number(k) - 1]; if (o && o.i !== g.elim) { e.preventDefault(); this.pickOpt(o); }
     }
   }
-  componentWillUnmount() { clearInterval(this.tBoss); window.removeEventListener('noga:pause', this.onPause); window.removeEventListener('noga:resume', this.onResume); window.removeEventListener('noga:hub', this.onHub); window.__nogaScreen = ''; window.dispatchEvent(new CustomEvent('noga:screen', { detail: '' })); window.removeEventListener('keydown', this.onKey); window.removeEventListener('pointerdown', this.onPt, true); clearTimeout(this.tBurst); clearTimeout(this.tGold); clearTimeout(this.tStep); clearTimeout(this.tb1); clearTimeout(this.tb2); clearTimeout(this.tSaved); clearTimeout(this.tv); clearTimeout(this.tHold); clearTimeout(this.tTurn); clearTimeout(this.tIdle); this.stopAudio(); clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); clearTimeout(this.th); clearTimeout(this.th2); }
+  componentWillUnmount() { clearInterval(this.tBoss); clearTimeout(this.tCoin); clearTimeout(this.tCoin2); window.removeEventListener('noga:pause', this.onPause); window.removeEventListener('noga:resume', this.onResume); window.removeEventListener('noga:hub', this.onHub); window.__nogaScreen = ''; window.dispatchEvent(new CustomEvent('noga:screen', { detail: '' })); window.removeEventListener('keydown', this.onKey); window.removeEventListener('pointerdown', this.onPt, true); clearTimeout(this.tBurst); clearTimeout(this.tGold); clearTimeout(this.tStep); clearTimeout(this.tb1); clearTimeout(this.tb2); clearTimeout(this.tSaved); clearTimeout(this.tv); clearTimeout(this.tHold); clearTimeout(this.tTurn); clearTimeout(this.tIdle); this.stopAudio(); clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); clearTimeout(this.th); clearTimeout(this.th2); }
 
   // ---------------- voice ----------------
   stopAudio() { this.tok++; this.lip = null; clearInterval(this.mi); clearTimeout(this.t3); clearTimeout(this.wd); try { if (this.au) { this.au.onended = null; this.au.onerror = null; this.au.onplaying = null; this.au.pause(); } } catch (e) {} this.vidRun(false); if (this.state.speaking) this.setState({ speaking: false }); }
@@ -489,6 +500,7 @@ class Component extends DCLogic {
     this.sfx(g.type === 'bowling' ? 'strike' : g.type === 'shoot' ? 'boom' : (LV.games[this.m.gi] || {}).skin === 'balloon' ? 'pop' : 'good', g.combo);
     if (comboHit) { this.sfx('combo'); this.buzz([30, 40, 30]); } else this.buzz(30);
     this.burst(comboHit ? 'combo' : 'good');
+    this.addCoins(1); this.flyCoin();
     if (g.boss) { g.pos = Math.min(100, g.pos + 30); g.zap = Date.now(); if (g.combo >= 3) g.T = Math.max(14, g.T * 0.88); }
     g.alienHit = Date.now(); clearTimeout(this.tAl); this.tAl = setTimeout(() => { g.alienHit = 0; this.up(); }, 900);
     this.up();
@@ -569,6 +581,7 @@ class Component extends DCLogic {
     if (this.m.g.boss) { this.bossWin(); return; }
     const g = this.m.g, stars = Math.max(1, 5 - (g.mistakes || 0));
     g.stars = stars; g.improved = stars > (this.m.done[this.m.gi] || 0);
+    this.m.coinWin = stars; this.addCoins(stars);
     const wasAll = this.allDone();
     const wasOpen = !!(this.store && LV.n < 7 && this.store.isComplete(LV.key));
     this.m.done[this.m.gi] = Math.max(stars, this.m.done[this.m.gi] || 0); this.m.victory = true; this.up();
@@ -765,7 +778,9 @@ class Component extends DCLogic {
       hubStars: starsOf(Object.keys(S.done).length, LV.games.length),
       allDone: this.allDone(),
       savedShow: !!this.m.saved, savedDone: () => this.savedDone(),  invite: !!(this.m.saved && this.m.invite), noInvite: !(this.m.saved && this.m.invite), storyText: this.m.soon ? 'כׇּל הַכָּבוֹד! סִיַּמְתֶּם אֶת הַכּוֹכָבִים שֶׁפְּתוּחִים כָּרֶגַע. הַכּוֹכָבִים הַבָּאִים יַגִּיעוּ בְּקָרוֹב!' : (LV.storyText || ''),
-      burst: this.m.burst || [],
+      burst: this.m.burst || [], coinFly: this.m.coinFly || [], coins: String(this.coins()), coinCls: this.m.coinBump ? 'coinpill cbump' : 'coinpill',
+      coinWinShow: !!(this.m.victory && this.m.coinWin), coinWin: '+' + (this.m.coinWin || 0) + ' מַטְבְּעוֹת',
+      shipFx: 'filter: ' + (this.shopState().shipFx || 'none'), petShow: !!this.shopState().pet, petEmoji: this.shopState().pet || '',
       comboShow: !!(g && g.combo >= 3 && S.screen === 'game' && !this.m.victory), comboText: g ? '🔥 רֶצֶף ' + (g.combo || 0) + '!' : '',
       alienShow: S.screen === 'game' && !!g && g.type !== 'bowling' && !g.boss && !this.m.victory,
       alienMiniImg: g && g.alienHit ? LV.alienDizzy : LV.alienImg,

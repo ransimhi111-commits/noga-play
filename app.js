@@ -61,7 +61,7 @@
     get(k) { return S[k]; }, set(k, v) { S[k] = v; save(S); },
     // every mistake of the last round of each game, the practice question included, for the parents' report
     noteHelp(k, gi, n) { S.help = Object.assign({}, S.help); S.help[k] = Object.assign({}, S.help[k], { [gi]: n }); save(S); },
-    reset() { S.done = {}; S.seenStory = false; S.last = null; S.time = 0; S.intake = null; S.opened = {}; S.help = {}; S.stickers = {}; S.resetAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} },
+    reset() { S.done = {}; S.seenStory = false; S.last = null; S.time = 0; S.intake = null; S.opened = {}; S.help = {}; S.stickers = {}; S.coins = 0; S.shop = {}; S.resetAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} },
     addTime(sec) { S.time = (S.time || 0) + sec; S.lastPlay = Date.now(); save(S); },
   };
   // planets opened under the old rule (any 5 games) stay open for children who already reached them
@@ -291,6 +291,7 @@
       ['🪐', 'הילד/ה בוחר/ת תחום (עברית, חשבון, אנגלית) ואז כוכב. בכל כוכב: קודם "שיעור עם נוגה", אחר כך 7 משחקים.'],
       ['🔊', 'נוגה אומרת הכול בקול, לא צריך לדעת לקרוא. כשלא בטוחים לוחצים על הרמקול. אחרי טעויות נוגה עוזרת לבד.'],
       ['⭐', 'כל משחק מסתיים ב-1 עד 5 כוכבים, ותמיד אפשר לשחק שוב ולשפר. כוכב חדש נפתח אחרי 5 משחקים עם 3 כוכבים ומעלה, ונוגה מזמינה לטוס אליו.'],
+      ['🪙', 'כל תשובה נכונה = מטבע, ועוד מטבעות לפי הכוכבים בסוף משחק. ב"חנות החללית" שבגשר החללית קונים צבע לחללית, אביזר לטייס וחיית מחמד. רק מראה: בלי יתרון במשחק ובלי כסף אמיתי.'],
       ['⏱️', '10–20 דקות ביום מספיקות. עדיף קצת כל יום מאשר הרבה בבת אחת.'],
       ['⏸', 'באמצע משחק: כפתור ⏸ בצד שמאל עוצר הכול — אפשר להמשיך, לבחור משחק אחר או לחזור הביתה.'],
       ['👨‍👩‍👧', 'אזור הורים (כפתור ☰ בצד שמאל למטה, נכנסים עם תרגיל כפל קטן כדי שהילדים לא ייכנסו בטעות): דוח קצר על ההתקדמות, שאלון מחדש, צלילים, פתיחת כל הרמות.'],

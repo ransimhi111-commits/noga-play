@@ -21,6 +21,11 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
 @keyframes popIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
 @keyframes launch{0%{transform:translateY(0)}100%{transform:translateY(-700px)}}
 .shake{animation:shake .45s ease}
+@keyframes coinTo{0%{transform:translate(0,0) scale(1.2);opacity:1}80%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.6);opacity:0}}
+.cfly{position:absolute;z-index:61;pointer-events:none;font-size:40px;line-height:1;margin:-20px 0 0 -20px;animation:coinTo .8s cubic-bezier(.5,0,.75,.7) forwards}
+@keyframes cbump{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+.coinpill{display:inline-flex;align-items:center;gap:6px;background:rgba(23,18,61,0.75);border:2px solid rgba(255,200,61,0.6);border-radius:999px;padding:4px 14px;font:700 24px Rubik,Fredoka,sans-serif;color:#FFE08A;white-space:nowrap}
+.cbump{animation:cbump .4s ease-out}
 .bob{animation:bob 3s ease-in-out infinite}
 .pulse{animation:pulse 1.6s ease-in-out infinite}
 .popin{animation:popIn .35s cubic-bezier(.2,.9,.3,1.3) both}
@@ -57,18 +62,20 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
     </div>
     <span style="font-size: 34px; font-weight: 700; color: #FFC83D; text-shadow: 0 3px 14px rgba(0,0,0,0.6)">גשר החללית</span>
     <div style="display: flex; align-items: center; gap: 12px">
+      <button onClick="{{openShop}}" class="coinpill" aria-label="מטבעות – לחנות" style="cursor: pointer; font-size: 22px; padding: 7px 16px">🪙 {{coins}}</button>
       <div style="display: flex; align-items: center; gap: 6px; background: rgba(36,28,92,0.85); border-radius: 999px; padding: 8px 16px"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="#FFC83D"/></svg><span style="font-size: 22px; font-weight: 700">{{starCount}}</span></div>
       <a href="Parent.dc.html" aria-label="אזור הורים" style="width: 46px; height: 46px; border-radius: 50%; background: rgba(36,28,92,0.85); display: flex; align-items: center; justify-content: center; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9C3F2" stroke-width="2.2" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></a>
     </div>
   </div>
   <div style="display: flex; align-items: center; justify-content: center; gap: 14px; position: relative; z-index: 3">
     <div style="display: flex; align-items: center; gap: 12px; background: rgba(36,28,92,0.85); border: 2px solid rgba(255,200,61,0.45); border-radius: 999px; padding: 6px 18px 6px 10px">
-      <img src="{{shipImg}}" alt="" style="width: 54px; height: 36px; object-fit: contain">
+      <img src="{{shipImg}}" alt="" style="width: 54px; height: 36px; object-fit: contain; {{shipFx}}"><span style="font-size: 24px">{{petEmoji}}</span>
       <span style="font-size: 17px; color: #C9C3F2">הַחֲלָלִית שֶׁלָּכֶם:</span>
       <span style="font-size: 20px; font-weight: 700; color: #FFC83D">{{shipParts}}</span>
       <div style="display: flex; gap: 4px"><sc-for list="{{shipDots}}" as="d" hint-placeholder-count="21"><span style="{{d.s}}"></span></sc-for></div>
       <span style="font-size: 17px; color: #C9C3F2">· 📒 {{stickerCount}}</span>
     </div>
+    <button onClick="{{openShop}}" class="pulse" style="display: flex; align-items: center; gap: 8px; background: #B48CFF; color: #17123D; border: 0; border-radius: 999px; padding: 10px 22px; font: 700 22px Fredoka, Rubik, sans-serif; cursor: pointer; box-shadow: 0 6px 0 #7A55C9">🛒 חֲנוּת הַחֲלָלִית</button>
   </div>
   <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 0">
     <div style="display: flex; align-items: center; gap: 22px">
@@ -91,6 +98,30 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
     <a href="MapMath.dc.html" style="display: flex; align-items: center; gap: 16px; background: #FFC83D; color: #17123D; border-radius: 30px; padding: 22px 24px; min-height: 120px; box-sizing: border-box; text-decoration: none; box-shadow: 0 8px 0 #D49D10, 0 0 30px rgba(255,200,61,0.5)"><span style="font-size: 58px; font-weight: 700; line-height: 1">7</span><span style="display: flex; flex-direction: column"><span style="font-size: 32px; font-weight: 700">חשבון</span><span style="font-size: 17px">{{mathLabel}}</span></span></a>
     <a href="MapEng.dc.html" style="display: flex; align-items: center; gap: 16px; background: #34D1BF; color: #17123D; border-radius: 30px; padding: 22px 24px; min-height: 120px; box-sizing: border-box; text-decoration: none; box-shadow: 0 8px 0 #1F9C8E, 0 0 30px rgba(52,209,191,0.5)"><span style="font-size: 58px; font-weight: 700; line-height: 1">A</span><span style="display: flex; flex-direction: column"><span style="font-size: 32px; font-weight: 700">אנגלית</span><span style="font-size: 17px">{{engLabel}}</span></span></a>
   </div>
+  <sc-if value="{{shopOn}}" hint-placeholder-val="{{false}}"><div class="popin" style="position: absolute; inset: 0; z-index: 50; background: rgba(10,7,36,0.96); display: flex; flex-direction: column; gap: 14px; padding: 24px 40px; box-sizing: border-box">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <span style="font-size: 36px; font-weight: 700; color: #FFC83D">🛒 חֲנוּת הַחֲלָלִית</span>
+      <span class="coinpill" style="font-size: 28px">🪙 {{coins}}</span>
+      <button onClick="{{closeShop}}" aria-label="סגירה" style="width: 72px; height: 72px; border-radius: 50%; border: 0; background: #241C5C; color: #FFFFFF; font-size: 32px; cursor: pointer">✕</button>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 26px; background: rgba(36,28,92,0.7); border-radius: 26px; padding: 10px">
+      <span style="font-size: 64px; line-height: 1">{{hatBig}}</span>
+      <img src="{{shipImg}}" alt="החללית" class="bob" style="width: 220px; height: 130px; object-fit: contain; {{shipFx}}">
+      <span class="bob" style="font-size: 64px; line-height: 1">{{petEmoji}}</span>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: center">
+      <sc-for list="{{shopTabs}}" as="t" hint-placeholder-count="3"><button onClick="{{t.go}}" style="{{t.style}}">{{t.label}}</button></sc-for>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px">
+      <sc-for list="{{shopItems}}" as="it" hint-placeholder-count="6"><button onClick="{{it.tap}}" style="{{it.style}}">
+        <sc-if value="{{it.isShip}}" hint-placeholder-val="{{false}}"><img src="{{shipImg}}" alt="" style="width: 110px; height: 66px; object-fit: contain; {{it.fx}}"></sc-if>
+        <sc-if value="{{it.isEmoji}}" hint-placeholder-val="{{false}}"><span style="font-size: 58px; line-height: 66px">{{it.e}}</span></sc-if>
+        <span style="font-size: 19px; font-weight: 700">{{it.name}}</span>
+        <span style="{{it.tagStyle}}">{{it.tag}}</span>
+      </button></sc-for>
+    </div>
+    <div style="text-align: center; font-size: 22px; color: #FFE08A; min-height: 30px">{{shopMsg}}</div>
+  </div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":820}}'></script>
