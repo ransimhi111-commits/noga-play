@@ -230,6 +230,7 @@ class Component extends DCLogic {
     }, kind === 'hint' ? 120 : 700);
   }
   componentDidMount() {
+    if (window.__nogaTest) { window.__nogaT = this; window.__nogaLV = LV; window.__nogaBOSS = BOSS; }   // automated tests only (never set in the app)
     this.say(LV.intro, 'friendly'); this.onKey = (e) => this.keyboard(e); window.addEventListener('keydown', this.onKey);
     this.onPt = (e) => { try { const root = document.querySelector('.space'); if (!root) return; const r = root.getBoundingClientRect(); this.lastPt = [(e.clientX - r.left) / r.width * 1180, (e.clientY - r.top) / r.height * 820]; } catch (err) {} };
     window.addEventListener('pointerdown', this.onPt, true);

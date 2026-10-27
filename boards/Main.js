@@ -87,7 +87,7 @@ class Component extends DCLogic {
       shopTabs: TABS.map(t => ({ label: t[1], style: tabStyle(this.state.tab === t[0]), go: () => this.setState({ tab: t[0], msg: '' }) })), shopItems, shopMsg: this.state.msg,
       shipFx: 'filter: ' + (sh.shipFx || 'none'), petEmoji: sh.pet || '', hatBig: sh.hat || '🧑‍🚀' };
     return { nogaGlow: this.glow(), nogaImg: this.frame(), speak: go, playHint: (this.state.heard || this.state.playing) ? [] : [{ go: go }], hebLabel: cur('Heb'), mathLabel: cur('Math'), engLabel: cur('Eng'),
-             shipImg: SHIP, shipParts: parts + '/21 חֲלָקִים', shipDots: dots, stickerCount: String(Object.keys(stk).length), pilotLabel: (sh.hat || '🧑‍🚀') + ' ' + (kid && kid.name ? kid.name : pilot ? pilot : 'טַיָּסִים'), starCount: String(stars), ...shopVals };
+             shipImg: SHIP, shipParts: parts + '/21 חֲלָקִים', shipDots: dots, stickerCount: String(Object.keys(stk).length), pilotLabel: (sh.hat || '🧑‍🚀') + ' ' + (kid && kid.name ? kid.name : pilot ? pilot : 'טַיָּסִים'), starCount: String(stars), holiTag: window.__nogaHoliday === 'hanukkah' ? ' 🕎' : '', ...shopVals };
   }
 }
 

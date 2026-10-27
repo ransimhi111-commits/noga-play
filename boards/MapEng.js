@@ -1,6 +1,6 @@
 window.__DCB=window.__DCB||{};window.__DCB["MapEng"]=function(DCLogic,React){
 
-const INFO = [{"what": "בְּנֶפְטוּן מַתְחִילִים לְדַבֵּר אַנְגְּלִית! קֹדֶם מַקְשִׁיבִים, אַחַר כָּךְ מְשַׂחֲקִים.", "games": "🎨 Paint by Voice · 🕺 Alien Says · 🔢 Listen and Count · 〰️ Number Match", "title": "שִׂיחָה וּמִלִּים בְּעַל פֶּה"}, {"what": "בְּאוּרָנוּס נַכִּיר אֶת הָאוֹתִיּוֹת בְּאַנְגְּלִית, מֵאֵיי וְעַד זֵד!", "games": "⌨️ Sound Keypad · 🎯 Letter Blaster · 〰️ Big and Small · 🃏 ABC Memory", "title": "אוֹתִיּוֹת וּצְלִילִים"}, {"what": "בְּשַׁבְּתַאי לוֹמְדִים מִלִּים חֲדָשׁוֹת בְּאַנְגְּלִית: חַיּוֹת, אֹכֶל וּבֵית סֵפֶר.", "games": "👂 Listen and Find · 📦 Category Pods · 〰️ Match-Line · 🃏 Word Memory", "title": "מִלִּים עִם תְּמוּנוֹת"}, {"what": "בְּצֶדֶק מַתְחִילִים לִקְרֹא בְּאַנְגְּלִית: מִלִּים קְצָרוֹת שֶׁל שָׁלוֹשׁ אוֹתִיּוֹת.", "games": "🧩 Build-a-Word · ⭐ Rhyme Catch · 🪨 Word Stones · 〰️ Match-Line", "title": "קוֹרְאִים מִלִּים קְצָרוֹת"}, {"what": "בְּמַאְדִּים מְדַבְּרִים עִם הַחַיְזָרִים בְּאַנְגְּלִית!", "games": "📡 Alien Chat · 🛒 Space Shop · 🤖 Finish My Phrase · 〰️ Question & Answer", "title": "שִׂיחוֹת קְצָרוֹת"}, {"what": "בְּכַדּוּר הָאָרֶץ אוֹסְפִים עוֹד וְעוֹד מִלִּים בְּאַנְגְּלִית: גּוּף, בְּגָדִים וּמֶזֶג אֲוִיר.", "games": "🎱 Word Bingo · 🎯 Word Blaster · 📒 מְמַיְּנִים מִלִּים · 🃏 Word Memory", "title": "אוֹצַר מִלִּים"}, {"what": "הִגַּעְנוּ לְנֹגַהּ! כָּאן קוֹרְאִים מִשְׁפָּטִים וְסִפּוּרִים קְטַנִּים בְּאַנְגְּלִית.", "games": "📕 Copy-Cat Book · 🧩 Story Puzzle · 📖 Predict-a-Story · 〰️ Sentence Match", "title": "מִשְׁפָּטִים וְסִפּוּרוֹנִים"}];
+const INFO = [{"what": "בְּנֶפְטוּן מַתְחִילִים לְדַבֵּר אַנְגְּלִית! קֹדֶם מַקְשִׁיבִים, אַחַר כָּךְ מְשַׂחֲקִים.", "games": "🎨 Paint by Voice · 🕺 Alien Says · 🔢 Listen and Count · 〰️ Number Match", "title": "שִׂיחָה וּמִלִּים בְּעַל פֶּה", "tag": ""}, {"what": "בְּאוּרָנוּס נַכִּיר אֶת הָאוֹתִיּוֹת בְּאַנְגְּלִית, מֵאֵיי וְעַד זֵד!", "games": "⌨️ Sound Keypad · 🎯 Letter Blaster · 〰️ Big and Small · 🃏 ABC Memory", "title": "אוֹתִיּוֹת וּצְלִילִים", "tag": ""}, {"what": "בְּשַׁבְּתַאי לוֹמְדִים מִלִּים חֲדָשׁוֹת בְּאַנְגְּלִית: חַיּוֹת, אֹכֶל וּבֵית סֵפֶר.", "games": "👂 Listen and Find · 📦 Category Pods · 〰️ Match-Line · 🃏 Word Memory", "title": "מִלִּים עִם תְּמוּנוֹת", "tag": ""}, {"what": "בְּצֶדֶק מַתְחִילִים לִקְרֹא בְּאַנְגְּלִית: מִלִּים קְצָרוֹת שֶׁל שָׁלוֹשׁ אוֹתִיּוֹת.", "games": "🧩 Build-a-Word · ⭐ Rhyme Catch · 🪨 Word Stones · 〰️ Match-Line", "title": "קוֹרְאִים מִלִּים קְצָרוֹת", "tag": ""}, {"what": "בְּמַאְדִּים מְדַבְּרִים עִם הַחַיְזָרִים בְּאַנְגְּלִית!", "games": "📡 Alien Chat · 🛒 Space Shop · 🤖 Finish My Phrase · 〰️ Question & Answer", "title": "שִׂיחוֹת קְצָרוֹת", "tag": ""}, {"what": "בְּכַדּוּר הָאָרֶץ אוֹסְפִים עוֹד וְעוֹד מִלִּים בְּאַנְגְּלִית: גּוּף, בְּגָדִים וּמֶזֶג אֲוִיר.", "games": "🎱 Word Bingo · 🎯 Word Blaster · 📒 מְמַיְּנִים מִלִּים · 🃏 Word Memory", "title": "אוֹצַר מִלִּים", "tag": ""}, {"what": "הִגַּעְנוּ לְנֹגַהּ! כָּאן קוֹרְאִים מִשְׁפָּטִים וְסִפּוּרִים קְטַנִּים בְּאַנְגְּלִית.", "games": "📕 Copy-Cat Book · 🧩 Story Puzzle · 📖 Predict-a-Story · 〰️ Sentence Match", "title": "מִשְׁפָּטִים וְסִפּוּרוֹנִים", "tag": ""}];
 class Component extends DCLogic {
   renderVals() {
     const st = this.props && this.props.store;
@@ -18,8 +18,10 @@ class Component extends DCLogic {
     v.infoOn = !!sel; v.infoClose = () => this.setState({ info: 0 });
     if (sel) {
       const d = INFO[sel - 1];
-      v.infoHead = '⁧' + sel + ' · ' + d.title + '⁩'; v.infoWhat = d.what; v.infoGames = d.games;
-      v.infoCanGo = v['p' + sel].open; v.infoLocked = !v['p' + sel].open; v.infoHref = 'EngL' + sel + '.dc.html';
+      v.infoHead = '⁧' + sel + ' · ' + d.title + '⁩'; v.infoWhat = d.what; v.infoGames = d.games; v.infoTag = d.tag; v.infoTagShow = !!d.tag;
+      v.infoCanGo = v['p' + sel].open; v.infoLocked = !v['p' + sel].open;
+      const cap = st && st.config ? ((st.config().open || {})['Eng'] || 7) : 7;
+      v.infoLockText = sel > cap ? '🔒 לְכִתּוֹת ב׳–ג׳. הוֹרִים יְכוֹלִים לִפְתֹּחַ בְּאֵזוֹר הַהוֹרִים.' : '🔒 נִפְתָּח אַחֲרֵי הַכּוֹכָב הַקּוֹדֵם'; v.infoHref = 'EngL' + sel + '.dc.html';
     }
     return v;
   }

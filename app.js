@@ -9,7 +9,21 @@
   const CFG = window.NOGA_CONFIG || { open: {}, start: 'Story', home: 'Main' };
 
   // ------------------------------------------------------------------ progress store
-  const KEY = 'noga.v1';
+  // up to 5 children on one device: each has its own progress record; the first one keeps the original key
+  // holidays: light decorations only (dates: Hanukkah 2026 = 4–12 Dec, 2027 = 24 Dec – 1 Jan); ?date=YYYY-MM-DD to preview
+  const HOLI = (() => { let d = new Date(); try { const q = new URLSearchParams(location.search).get('date'); if (q) d = new Date(q + 'T12:00:00'); } catch (e) {}
+    const t = d.getTime(), r = (a, b) => t >= new Date(a + 'T00:00:00').getTime() && t <= new Date(b + 'T23:59:59').getTime();
+    return (r('2026-12-04', '2026-12-12') || r('2027-12-24', '2028-01-01')) ? 'hanukkah' : ''; })();
+  window.__nogaHoliday = HOLI;
+  const PKEY = 'noga.profiles', MAX_KIDS = 5;
+  let PROF = null; try { PROF = JSON.parse(localStorage.getItem(PKEY)); } catch (e) {}
+  if (!PROF || !Array.isArray(PROF.list) || !PROF.list.length) PROF = { list: [{ id: 'p1' }], active: 'p1' };
+  if (!PROF.list.some(p => p.id === PROF.active)) PROF.active = PROF.list[0].id;
+  const KEY = PROF.active === 'p1' ? 'noga.v1' : 'noga.v1.' + PROF.active;
+  function saveProf() { try { localStorage.setItem(PKEY, JSON.stringify(PROF)); } catch (e) {} }
+  function kidLabel(p, i) { return p.name ? p.name : p.g === 'p' ? 'כַּמָּה יְלָדִים' : 'יֶלֶד/ה ' + (i + 1); }
+  function switchKid(id) { if (id === PROF.active) return; PROF.active = id; saveProf(); try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} location.reload(); }
+  function addKid() { if (PROF.list.length >= MAX_KIDS) return; let n = 2; while (PROF.list.some(p => p.id === 'p' + n)) n++; PROF.list.push({ id: 'p' + n }); switchKid('p' + n); }
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
   // two tabs (or the home-screen app next to a browser tab) each hold a copy: merge with what is stored
   // instead of overwriting it, so stars earned in one copy are never erased by the other
@@ -24,6 +38,8 @@
   }
   function save(s) { try { merge(s, JSON.parse(localStorage.getItem(KEY))); localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
   const S = Object.assign({ done: {}, seenStory: false }, load());
+  function syncProf() { const me = PROF.list.find(p => p.id === PROF.active); if (me && S.kid && (me.name !== (S.kid.name || '') || me.g !== S.kid.g)) { me.name = S.kid.name || ''; me.g = S.kid.g; saveProf(); } }
+  syncProf();
   window.addEventListener('storage', (e) => { if (e.key === KEY) { try { merge(S, JSON.parse(e.newValue)); } catch (err) {} } });
 
   // ------------------------------------------------------------------ pilot card: the child's name, and boy / girl / several children
@@ -62,6 +78,15 @@
     // every mistake of the last round of each game, the practice question included, for the parents' report
     noteHelp(k, gi, n) { S.help = Object.assign({}, S.help); S.help[k] = Object.assign({}, S.help[k], { [gi]: n }); save(S); },
     reset() { S.done = {}; S.seenStory = false; S.last = null; S.time = 0; S.intake = null; S.opened = {}; S.help = {}; S.stickers = {}; S.coins = 0; S.shop = {}; S.resetAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} },
+    // save everything for playing without internet (the service worker caches the files of this version)
+    offline(cb) {
+      const sw = navigator.serviceWorker;
+      if (!sw || !sw.controller) { cb({ error: 'nosw' }); return; }
+      fetch('files.json', { cache: 'no-store' }).then(r => r.json()).then(files => {
+        const on = (e) => { const d = e.data || {}; if (d.type !== 'precache') return; if (d.finished) { sw.removeEventListener('message', on); if (!d.failed) { S.offlineV = CFG.v; save(S); } } cb(Object.assign({ total: files.length, mb: Math.round(files.reduce((a, f) => a + (f.s || 0), 0) / 1e6) }, d)); };
+        sw.addEventListener('message', on); sw.controller.postMessage({ type: 'precache', files });
+      }).catch(() => cb({ error: 'net' }));
+    },
     addTime(sec) { S.time = (S.time || 0) + sec; S.lastPlay = Date.now(); save(S); },
   };
   // planets opened under the old rule (any 5 games) stay open for children who already reached them
@@ -241,6 +266,7 @@
     const [portrait, setPortrait] = R.useState(false);
     const [keepPortrait, setKeepPortrait] = R.useState(false);
     const [menu, setMenu] = R.useState(false);
+    const [kidsOpen, setKidsOpen] = R.useState(false);
     const [guide, setGuide] = R.useState(false);
     const [kidOpen, setKidOpen] = R.useState(false);
     const [kidV, setKidV] = R.useState(0);
@@ -249,7 +275,7 @@
     const kRef = R.useRef({ n: '', g: '' });   // the latest name and choice, also for key handlers set up before a re-render
     const openKid = () => { setMenu(false); const n = (S.kid && S.kid.name) || '', g = (S.kid && S.kid.g) || ''; kRef.current = { n, g }; setKName(n); setKG(g); setKidOpen(true); };
     const kidDone = () => { const kName = kRef.current.n, kG = kRef.current.g; if (!kG || (kG !== 'p' && !kName.trim())) return;   // name and boy / girl are required (or 'several children')
-      namesReady.then(() => { S.kid = kidFor(kG === 'p' ? '' : finalize(kName.trim()), kG); S.kidSkip = 0; save(S); setKidOpen(false); setKidV(v => v + 1); }); };
+      namesReady.then(() => { S.kid = kidFor(kG === 'p' ? '' : finalize(kName.trim()), kG); S.kidSkip = 0; save(S); syncProf(); setKidOpen(false); setKidV(v => v + 1); }); };
     const setKN = (t) => { kRef.current.n = t; setKName(t); };
     const kidKey = (c) => setKN((kRef.current.n.replace(/[ךםןףץ]/g, x => UNFIN[x]) + c).replace(/^\s+/, '').replace(/\s\s+/g, ' ').slice(0, 14));
     const kidBack = () => setKN(kRef.current.n.slice(0, -1));
@@ -292,6 +318,8 @@
       ['🔊', 'נוגה אומרת הכול בקול, לא צריך לדעת לקרוא. כשלא בטוחים לוחצים על הרמקול. אחרי טעויות נוגה עוזרת לבד.'],
       ['⭐', 'כל משחק מסתיים ב-1 עד 5 כוכבים, ותמיד אפשר לשחק שוב ולשפר. כוכב חדש נפתח אחרי 5 משחקים עם 3 כוכבים ומעלה, ונוגה מזמינה לטוס אליו.'],
       ['🪙', 'כל תשובה נכונה = מטבע, ועוד מטבעות לפי הכוכבים בסוף משחק. ב"חנות החללית" שבגשר החללית קונים צבע לחללית, אביזר לטייס וחיית מחמד. רק מראה: בלי יתרון במשחק ובלי כסף אמיתי.'],
+      ['👧👦', 'כמה ילדים בבית? בתפריט ☰ ← "ילדים במכשיר": לכל ילד/ה כוכבים, מטבעות וכרטיס טייס משלו (עד 5). במסך הפתיחה בוחרים מי משחק.'],
+      ['📥', 'לפני טיסה או נסיעה: באזור ההורים "שמירה לשימוש בלי אינטרנט". בלי רשת נוגה מופיעה בתמונות במקום בווידאו, והקול נשמע כרגיל.'],
       ['⏱️', '10–20 דקות ביום מספיקות. עדיף קצת כל יום מאשר הרבה בבת אחת.'],
       ['⏸', 'באמצע משחק: כפתור ⏸ בצד שמאל עוצר הכול — אפשר להמשיך, לבחור משחק אחר או לחזור הביתה.'],
       ['👨‍👩‍👧', 'אזור הורים (כפתור ☰ בצד שמאל למטה, נכנסים עם תרגיל כפל קטן כדי שהילדים לא ייכנסו בטעות): דוח קצר על ההתקדמות, שאלון מחדש, צלילים, פתיחת כל הרמות.'],
@@ -316,6 +344,7 @@
         h('button', { onClick: () => go(CFG.home) }, '🏠 מסך הבית'),
         h('button', { onClick: () => { setMenu(false); setStarted(false); history.pushState({ b: 'Start' }, '', '#'); } }, '▶ מסך הפתיחה'),
         h('button', { onClick: openKid }, '🧑‍🚀 כרטיס טייס: שם, ילד או ילדה'),
+        h('button', { onClick: () => { setMenu(false); setKidsOpen(true); } }, '👧👦 ילדים במכשיר' + (PROF.list.length > 1 ? ' (' + PROF.list.length + ')' : '')),
         h('button', { onClick: () => go('Parent') }, '👨‍👩‍👧 אזור הורים'),
         h('button', { onClick: () => { setMenu(false); setGuide(true); } }, '❓ איך משתמשים'),
         h('button', { className: 'menu-fb', onClick: () => { setMenu(false); sendFeedback(); } }, '💬 שלחו לרן משוב'),
@@ -360,10 +389,16 @@
         h('img', { src: 'assets/eng.webp', alt: '', className: 'deco deco-alien', style: { right: '24%', bottom: '6%', width: '9vw', maxWidth: 110, animationDelay: '-1.6s' } }),
         h('img', { src: 'assets/ship.webp', alt: '', className: 'deco deco-ship', style: { left: '22%', bottom: '32%', width: '12vw', maxWidth: 150 } }),
         h('img', { src: 'assets/noga_friendly.webp', alt: 'נוגה', className: 'start-noga' }),
+        HOLI === 'hanukkah' ? h(R.Fragment, null,
+          h('span', { className: 'holi holi-big', style: { right: '30%', top: '6%' } }, '🕎'),
+          ['🍩', '✨', '🍩', '✨', '🍩'].map((e, i) => h('span', { key: 'hl' + i, className: 'holi', style: { left: (8 + i * 19) + '%', top: (18 + (i % 2) * 52) + '%', animationDelay: (i * 0.4) + 's' } }, e)),
+          h('span', { className: 'holi-msg' }, 'חֲנֻכָּה שָׂמֵחַ! 🕎')) : null,
         h('h1', null, 'לְהַצִּיל אֶת כּוֹכַב נֹגַהּ'),
         (S.seenStory || S.last) ? h('div', { className: 'start-where' }, 'מַמְשִׁיכִים מֵאֵיפֹה שֶׁעָצַרְנוּ: ' + whereLabel(name)) : null,
         h('button', { className: 'start-btn', onClick: () => { unlockAudio(); goFullscreen(); keepStorage(); setStarted(true); history.replaceState({ b: name }, '', '#' + name); } }, (S.seenStory || S.last) ? '▶  מַמְשִׁיכִים' : '▶  מַתְחִילִים'),
         IN_APP ? h('div', { className: 'start-inapp' }, 'כְּדֵי שֶׁהַהִתְקַדְּמוּת תִּשָּׁמֵר, פִּתְחוּ אֶת הָאַפְּלִיקַצְיָה בַּדַּפְדְּפָן (Chrome אוֹ Safari) וְלֹא מִתּוֹךְ וָואטְסְאַפּ אוֹ פֵיְיסְבּוּק.') : null,
+        PROF.list.length > 1 ? h('div', { className: 'start-kids', role: 'radiogroup', 'aria-label': 'מי משחק' }, h('span', { className: 'start-kids-q' }, 'מִי מְשַׂחֵק?'),
+          PROF.list.map((p, i) => h('button', { key: p.id, role: 'radio', 'aria-checked': p.id === PROF.active ? 'true' : 'false', className: 'kchip' + (p.id === PROF.active ? ' on' : ''), onClick: () => switchKid(p.id) }, (p.g === 'f' ? '👧 ' : p.g === 'm' ? '👦 ' : '🧒 ') + kidLabel(p, i)))) : null,
         h('div', { className: 'start-parents' },
           h('button', { className: 'pbtn', onClick: () => go('Parent') }, '👨‍👩‍👧 אזור הורים'),
           !S.intake ? h('button', { className: 'pbtn pbtn-gold', onClick: () => go('Intake') }, '📝 שאלון לבחירת רמה (2 דק׳)') : null,
@@ -405,8 +440,15 @@
             h('button', { className: 'kid-del', 'aria-label': 'מחיקת אות', onClick: kidBack }, '⌫')),
           h('div', { className: 'kid-kb' }, KB.map(c => h('button', { key: c, className: 'kid-k' + (c === ' ' ? ' kid-sp' : ''), 'aria-label': c === ' ' ? 'רווח' : c, onClick: () => kidKey(c) }, c === ' ' ? 'רֶוַח' : c)))))) : null;
     const pauseBtn = started && inGame && !paused && !breakAsk ? h('button', { className: 'pause-fab', 'aria-label': 'הַפְסָקָה', onClick: pause }, '⏸') : null;
-    return h(R.Fragment, null, backdrop, stage, pauseBtn, menuOv, guideOv, pauseOv, breakOv, errOv, gateOv, kidOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
+    const kidsOv = kidsOpen ? h('div', { className: 'ov', onClick: () => setKidsOpen(false) },
+      h('div', { className: 'guide kids-box', onClick: (e) => e.stopPropagation() },
+        h('div', { className: 'guide-head' }, h('span', null, '👧👦 יְלָדִים בַּמַּכְשִׁיר'), h('button', { className: 'ov-x', 'aria-label': 'סגירה', onClick: () => setKidsOpen(false) }, '✕')),
+        h('p', { className: 'kids-note' }, 'לְכָל יֶלֶד וְיַלְדָּה כּוֹכָבִים, מַטְבְּעוֹת וְכַרְטִיס טַיָּס מִשֶּׁלָּהֶם. עַד ' + MAX_KIDS + ' יְלָדִים.'),
+        h('div', { className: 'kids-list' }, PROF.list.map((p, i) => h('button', { key: p.id, className: 'kchip big' + (p.id === PROF.active ? ' on' : ''), onClick: () => { if (p.id === PROF.active) setKidsOpen(false); else switchKid(p.id); } },
+          (p.g === 'f' ? '👧 ' : p.g === 'm' ? '👦 ' : '🧒 ') + kidLabel(p, i) + (p.id === PROF.active ? ' · מְשַׂחֵק עַכְשָׁו' : '')))),
+        PROF.list.length < MAX_KIDS ? h('button', { className: 'guide-ok', onClick: addKid }, '➕ יֶלֶד אוֹ יַלְדָּה נוֹסָפִים') : null)) : null;
+    return h(R.Fragment, null, backdrop, stage, kidsOv, pauseBtn, menuOv, guideOv, pauseOv, breakOv, errOv, gateOv, kidOv, portrait && !keepPortrait ? h('div', { className: 'rotate' }, h('div', { className: 'rotate-icon' }, '📱↻'), 'סוֹבְבוּ אֶת הַמַּכְשִׁיר לְרֹחַב', h('button', { className: 'rotate-skip', onClick: () => setKeepPortrait(true) }, 'לְהַמְשִׁיךְ בְּלִי לְסוֹבֵב')) : null);
   }
   RD.createRoot(document.getElementById('root')).render(h(App));
-  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || /[?&]sw=1/.test(location.search))) navigator.serviceWorker.register('sw.js').catch(() => {});
 })();

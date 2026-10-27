@@ -45,8 +45,13 @@ class Component extends DCLogic {
       try { window.open(url, '_blank'); } catch (e) { location.href = url; }
       this.setState({ shared: 1 });
     };
+    const cfgv = st && st.config ? st.config().v : '';
+    const off = this.state.off || null;
+    const offLabel = off && off.error ? '📥 אפשר לשמור רק מהאתר עצמו (https)' : off && off.finished ? (off.failed ? '📥 חלק לא נשמר – לנסות שוב' : '✓ נשמר לשימוש בלי אינטרנט') : off ? '📥 שומר… ' + Math.round(100 * (off.done || 0) / (off.total || 1)) + '%' :
+      (st && st.get('offlineV') === cfgv ? '✓ שמור לשימוש בלי אינטרנט' : st && st.get('offlineV') ? '📥 יש גרסה חדשה – לשמור שוב' : '📥 שמירה לשימוש בלי אינטרנט (כ-40MB)');
+    const saveOffline = () => { if (!st || !st.offline || (off && !off.finished && !off.error)) return; this.setState({ off: { done: 0, total: 1 } }); st.offline(d => this.setState({ off: d })); };
     return {
-      report, subjects, share, shareLabel: this.state.shared ? 'נשלח / הועתק ✓' : 'שליחת הדוח',
+      report, subjects, share, saveOffline, offLabel, shareLabel: this.state.shared ? 'נשלח / הועתק ✓' : 'שליחת הדוח',
       note: st ? 'רמה נפתחת אחרי 5 משחקים עם 3 כוכבים ומעלה, ורמה שנפתחה נשארת פתוחה. ההתקדמות נשמרת במכשיר הזה.' : 'תצוגה לדוגמה. באפליקציה מוצגת ההתקדמות האמיתית מהמכשיר.',
       muteLabel: mute ? '🔇 צלילי משחק כבויים' : '🔊 צלילי משחק פועלים', muteStyle: btn(!mute),
       calmLabel: calm ? '😌 הַחַיְזָר בַּמִּשְׂחָק "מִתְקָרֵב" לֹא זָז' : '👾 הַחַיְזָר בַּמִּשְׂחָק "מִתְקָרֵב" זָז', calmStyle: btn(!calm),
