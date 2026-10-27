@@ -14,6 +14,8 @@
 body{margin:0}
 .sky{background-color:#0E0A2E;background-image:linear-gradient(rgba(14,10,46,0.35),rgba(14,10,46,0.6)),url('assets/bg.jpg');background-size:cover;background-position:center}
 a{color:#FFC83D}a:hover{color:#FFE08A}@keyframes curb{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}.curring{animation:curb 1.1s ease-in-out infinite;filter:drop-shadow(0 0 12px rgba(255,200,61,.9))}
+.ibtn{width:46px;height:46px;border-radius:50%;border:3px solid #17123D;background:#FFFFFF;color:#17123D;font:700 26px Fredoka,Rubik,sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+@keyframes popIn{0%{transform:translateX(-50%) scale(.8);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:1}}.pop{animation:popIn .22s ease-out}
 </style>
 </helmet>
 <div class="sky" dir="rtl" style="width: 1180px; height: 820px; position: relative; overflow: hidden; font-family: Fredoka, sans-serif; color: #FFFFFF">
@@ -126,6 +128,23 @@ a{color:#FFC83D}a:hover{color:#FFE08A}@keyframes curb{0%,100%{transform:translat
     <span style="font-size: 20px; font-weight: 700; background: rgba(23,18,61,0.88); border-radius: 999px; padding: 0 12px; white-space: nowrap">7 · כוכב נוגה</span>
     <span style="font-size: 14px; color: #E6E1FF; background: rgba(23,18,61,0.92); border-radius: 999px; padding: 2px 10px; white-space: nowrap">רמה 7 · לוח הכפל</span>
     <span style="font-size: 13px; font-weight: 700; background: #241C5C; border-radius: 999px; padding: 2px 10px">🔒</span>
+  </div></sc-if>
+  <button onClick="{{p1.info}}" aria-label="מה לומדים בכוכב 1" class="ibtn" style="position: absolute; left: 974px; top: 534px; z-index: 5">?</button>
+  <button onClick="{{p2.info}}" aria-label="מה לומדים בכוכב 2" class="ibtn" style="position: absolute; left: 799px; top: 324px; z-index: 5">?</button>
+  <button onClick="{{p3.info}}" aria-label="מה לומדים בכוכב 3" class="ibtn" style="position: absolute; left: 604px; top: 554px; z-index: 5">?</button>
+  <button onClick="{{p4.info}}" aria-label="מה לומדים בכוכב 4" class="ibtn" style="position: absolute; left: 494px; top: 329px; z-index: 5">?</button>
+  <button onClick="{{p5.info}}" aria-label="מה לומדים בכוכב 5" class="ibtn" style="position: absolute; left: 339px; top: 544px; z-index: 5">?</button>
+  <button onClick="{{p6.info}}" aria-label="מה לומדים בכוכב 6" class="ibtn" style="position: absolute; left: 189px; top: 359px; z-index: 5">?</button>
+  <button onClick="{{p7.info}}" aria-label="מה לומדים בכוכב 7" class="ibtn" style="position: absolute; left: 24px; top: 494px; z-index: 5">?</button>
+  <sc-if value="{{infoOn}}" hint-placeholder-val="{{false}}"><div onClick="{{infoClose}}" style="position: absolute; inset: 0; z-index: 20; background: rgba(8,5,30,0.55)"></div>
+  <div class="pop" style="position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); width: 760px; z-index: 21; background: #17123D; border: 3px solid #FFC83D; border-radius: 26px; padding: 22px 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.5)">
+    <div style="display: flex; align-items: center; justify-content: space-between"><span style="font-size: 28px; font-weight: 700">{{infoHead}}</span><button onClick="{{infoClose}}" aria-label="סגירה" style="background: transparent; border: 0; color: #C9C3F2; font-size: 30px; cursor: pointer">✕</button></div>
+    <div style="font-size: 16px; color: #C9C3F2">מָה לוֹמְדִים כָּאן</div>
+    <div style="font-size: 24px; line-height: 1.45">{{infoWhat}}</div>
+    <div style="font-size: 16px; color: #C9C3F2; margin-top: 4px">הַמִּשְׂחָקִים</div>
+    <div style="font-size: 19px; line-height: 1.6">{{infoGames}}</div>
+    <sc-if value="{{infoCanGo}}" hint-placeholder-val="{{false}}"><a href="{{infoHref}}" style="align-self: flex-start; margin-top: 6px; background: #FFC83D; color: #17123D; border-radius: 999px; padding: 12px 34px; font-size: 24px; font-weight: 700; text-decoration: none; box-shadow: 0 6px 0 #D49D10">טָסִים לְכָאן ←</a></sc-if>
+    <sc-if value="{{infoLocked}}" hint-placeholder-val="{{false}}"><span style="font-size: 18px; color: #FFC83D">🔒 נִפְתָּח אַחֲרֵי הַכּוֹכָב הַקּוֹדֵם</span></sc-if>
   </div></sc-if>
   <span style="position: absolute; bottom: 14px; right: 40px; font-size: 13px; color: #8F88C2">תמונות כוכבי הלכת: NASA, נחלת הכלל</span>
 </div>

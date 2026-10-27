@@ -7,7 +7,7 @@ class Component extends DCLogic {
   constructor(p) { super(p); this.state = { v: 0, confirm: false }; }
   renderVals() {
     const st = this.props && this.props.store;
-    const btn = (on) => 'border: 0; border-radius: 999px; padding: 12px 22px; font: 600 18px Rubik, sans-serif; cursor: pointer; ' + (on ? 'background: #34D1BF; color: #17123D' : 'background: #241C5C; color: #FFFFFF');
+    const btn = (on) => 'border: 0; border-radius: 999px; padding: 10px 16px; font: 600 16px Rubik, sans-serif; cursor: pointer; ' + (on ? 'background: #34D1BF; color: #17123D' : 'background: #241C5C; color: #FFFFFF');
     const subjects = SUBJ.map(([p, name, color]) => ({ name, color, levels: NAMES[p].map((nm, i) => {
       const key = p + 'L' + (i + 1);
       const cnt = st ? st.count(key) : (i === 0 ? 3 : 0);
@@ -31,8 +31,22 @@ class Component extends DCLogic {
       { k: 'מה הולך טוב לבד (4–5 כוכבים, בלי הרבה רמזים)', v: strong.length ? strong.length + ' משחקים, למשל: ' + strong.slice(0, 3).join(', ') : games ? 'עוד לא – זה בסדר, רק מתחילים.' : 'עוד אין נתונים', c: '#FFC83D' },
       { k: 'במה כדאי לעזור (1–2 כוכבים, או ניצחון בעזרת רמזים)', v: weak.length ? weak.slice(0, 3).join(', ') + ' – כדאי לשחק יחד פעם אחת, ואז לתת לנסות לבד.' : games ? 'כרגע אין – נוגה מסתדרת עם הילד/ה.' : 'עוד אין נתונים', c: '#FF7A59' },
     ];
+    // share the report: the phone's share sheet (WhatsApp, mail…) or, on a computer, a prepared e-mail
+    const kid = st ? st.get('kid') : null;
+    const who = kid && kid.name ? kid.name : 'הילד/ה';
+    const today = new Date().toLocaleDateString('he-IL');
+    const shareText = 'דוח התקדמות – להציל את כוכב נוגה\n' + who + ' · ' + today + '\n\n' + report.map(r => '• ' + r.k + '\n' + r.v).join('\n\n') +
+      '\n\nרמות: ' + subjects.map(sb => sb.name + ' ' + sb.levels.filter(l => l.label.indexOf('✓') === 0).length + '/7 הושלמו').join(' · ') + '\n\nhttps://ransimhi111-commits.github.io/noga-play/';
+    const share = () => {
+      const title = 'דוח התקדמות – ' + who;
+      try { if (navigator.share) { navigator.share({ title, text: shareText }).then(() => this.setState({ shared: 1 })).catch(() => {}); return; } } catch (e) {}
+      try { if (navigator.clipboard) navigator.clipboard.writeText(shareText).catch(() => {}); } catch (e) {}
+      const url = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(shareText);
+      try { window.open(url, '_blank'); } catch (e) { location.href = url; }
+      this.setState({ shared: 1 });
+    };
     return {
-      report, subjects,
+      report, subjects, share, shareLabel: this.state.shared ? 'נשלח / הועתק ✓' : 'שליחת הדוח',
       note: st ? 'רמה נפתחת אחרי 5 משחקים עם 3 כוכבים ומעלה, ורמה שנפתחה נשארת פתוחה. ההתקדמות נשמרת במכשיר הזה.' : 'תצוגה לדוגמה. באפליקציה מוצגת ההתקדמות האמיתית מהמכשיר.',
       muteLabel: mute ? '🔇 צלילי משחק כבויים' : '🔊 צלילי משחק פועלים', muteStyle: btn(!mute),
       calmLabel: calm ? '😌 הַחַיְזָר בַּמִּשְׂחָק "מִתְקָרֵב" לֹא זָז' : '👾 הַחַיְזָר בַּמִּשְׂחָק "מִתְקָרֵב" זָז', calmStyle: btn(!calm),

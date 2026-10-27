@@ -769,7 +769,8 @@ class Component extends DCLogic {
       comboShow: !!(g && g.combo >= 3 && S.screen === 'game' && !this.m.victory), comboText: g ? '🔥 רֶצֶף ' + (g.combo || 0) + '!' : '',
       alienShow: S.screen === 'game' && !!g && g.type !== 'bowling' && !g.boss && !this.m.victory,
       alienMiniImg: g && g.alienHit ? LV.alienDizzy : LV.alienImg,
-      alienMiniStyle: g ? ('position: absolute; left: 44px; top: ' + (150 + (g.step || 0) * 105) + 'px; width: ' + Math.round(116 - Math.min(1, g.score / Math.max(1, g.n)) * 52) + 'px; z-index: 4; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5)); transition: top .9s ease, width .5s ease, transform .3s ease; transform: ' + (g.alienLaugh ? 'rotate(-10deg) scale(1.12)' : g.alienHit ? 'rotate(14deg) scale(0.82)' : 'rotate(0)')) : '',
+      alienTap: () => { const g2 = this.m.g; if (!g2) return; g2.alienLaugh = Date.now(); this.sfx('pop'); clearTimeout(this.tAl2); this.tAl2 = setTimeout(() => { g2.alienLaugh = 0; this.up(); }, 700); this.up(); },
+      alienMiniStyle: g ? ('position: absolute; left: 44px; top: ' + (150 + (g.step || 0) * 105) + 'px; width: ' + Math.round(116 - Math.min(1, g.score / Math.max(1, g.n)) * 52) + 'px; z-index: 4; cursor: pointer; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5)); transition: top .9s ease, width .5s ease, transform .3s ease; transform: ' + (g.alienLaugh ? 'rotate(-10deg) scale(1.12)' : g.alienHit ? 'rotate(14deg) scale(0.82)' : 'rotate(0)')) : '',
       planetMiniStyle: 'position: absolute; left: 52px; top: 560px; width: 90px; height: 90px; object-fit: contain; z-index: 3; opacity: 0.95; filter: drop-shadow(0 0 18px rgba(255,200,61,0.45))',
       gold: g && g.gold ? [{ style: 'position: absolute; left: ' + g.gold.x + 'px; top: ' + g.gold.y + 'px; z-index: 40; width: 96px; height: 96px; border: 0; background: transparent; font-size: 72px; cursor: pointer; filter: drop-shadow(0 0 22px #FFC83D)', tap: () => this.tapGold() }] : [],
       goldMsg: !!this.m.goldMsg,
@@ -970,5 +971,6 @@ class Component extends DCLogic {
     return v;
   }
 }
+
 
 ;return Component;};

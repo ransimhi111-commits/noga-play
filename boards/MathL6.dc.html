@@ -690,7 +690,7 @@ a{color:#FFC83D}a:hover{color:#FFE08A}
         </div>
       </div>
     </sc-if>
-  </sc-if><sc-if value="{{alienShow}}" hint-placeholder-val="{{false}}"><img src="{{planetImg}}" alt="" style="{{planetMiniStyle}}"><img src="{{alienMiniImg}}" alt="" style="{{alienMiniStyle}}"></sc-if>
+  </sc-if><sc-if value="{{alienShow}}" hint-placeholder-val="{{false}}"><img src="{{planetImg}}" alt="" style="{{planetMiniStyle}}"><img src="{{alienMiniImg}}" alt="החייזר" onClick="{{alienTap}}" style="{{alienMiniStyle}}"></sc-if>
     <sc-if value="{{comboShow}}" hint-placeholder-val="{{false}}"><div class="pop" style="position: absolute; left: 36px; top: 96px; z-index: 40; background: linear-gradient(90deg, #FF7A59, #FFC83D); color: #17123D; border-radius: 999px; padding: 8px 26px; font: 700 28px Rubik, Fredoka, sans-serif; box-shadow: 0 6px 20px rgba(255,122,89,0.6); pointer-events: none">{{comboText}}</div></sc-if>
     <sc-for list="{{gold}}" as="gd" hint-placeholder-count="0"><button onClick="{{gd.tap}}" class="goldstar" aria-label="כוכב זהב" style="{{gd.style}}">🌟</button></sc-for>
     <sc-if value="{{goldMsg}}" hint-placeholder-val="{{false}}"><div class="pop" style="position: absolute; left: 50%; top: 200px; transform: translateX(-50%); z-index: 45; background: #FFC83D; color: #17123D; border-radius: 24px; padding: 14px 30px; font: 700 30px Rubik, sans-serif; box-shadow: 0 8px 30px rgba(255,200,61,0.7); pointer-events: none">🌟 כּוֹכַב זָהָב! מַדְבֵּקָה נְדִירָה!</div></sc-if>
