@@ -67,6 +67,7 @@
       const n = Number(m[2]), max = CFG.open[m[1]] || 0;
       if (S.openAll) return true;
       if (n > max) return false;
+      if (CFG.free) return true;   // pilot: every level up to the cap is open without passing the previous one
       if (S.opened && S.opened[k]) return true;   // a planet once opened stays open
       const st = (S.intake && S.intake.start && S.intake.start[m[1]]) || 1;
       const ok = n <= st || store.isComplete(m[1] + 'L' + (n - 1));
