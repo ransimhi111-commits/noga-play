@@ -766,6 +766,14 @@ class Component extends DCLogic {
     const v = Object.assign(DEFAULTS(), {
       title: LV.title, levelLabel: 'רָמָה ' + LV.n + ' · ' + LV.subjName, mapHref: LV.mapHref, nextHref: LV.nextHref, hasNext: !!LV.nextHref && (!this.store || this.store.isOpen(String(LV.nextHref).replace('.dc.html', ''))),
       nextLabel: LV.nextLabel,
+      ...(() => {   // why the next planet is still closed, in words a child (and a parent) understands
+        const nk = String(LV.nextHref || '').replace('.dc.html', ''); const st = this.store;
+        if (!st || !/L\d$/.test(nk) || st.isOpen(nk)) return { lockShow: false, lockText: '' };
+        const cfg = st.config ? st.config() : {}; const cap = ((cfg.open || {})[nk.replace(/L\d$/, '')]) || 7;
+        if (Number(nk.slice(-1)) > cap) return { lockShow: true, lockText: '🔒 הַכּוֹכָב הַבָּא מְחַכֶּה לְכִתָּה ב׳' };
+        const need = Math.max(1, (cfg.pass || 5) - (st.count ? st.count(LV.key) : 0));
+        return { lockShow: true, lockText: need === 1 ? '🚀 עוֹד מִשְׂחָק אֶחָד עִם 3 כּוֹכָבִים, וְהַכּוֹכָב הַבָּא נִפְתָּח!' : '🚀 עוֹד ' + need + ' מִשְׂחָקִים עִם 3 כּוֹכָבִים, וְהַכּוֹכָב הַבָּא נִפְתָּח!' };
+      })(),
       isHub: S.screen === 'hub', isLesson: S.screen === 'lesson', isGame: S.screen === 'game', isVocab: S.screen === 'vocab',
       vocabTitle: S.screen === 'vocab' ? (LV.games[S.gi].icon + ' ' + iso(LV.games[S.gi].title)) : '',
       vocabItems: S.screen === 'vocab' ? LV.games[S.gi].vocab.map((w, k) => ({ pic: w.pic || '', t: w.t || '', he: w.he || '', tap: () => { clearTimeout(this.tv); this.m.vocabSel = k; this.up(); this.say(w.say, 'pointing'); },
